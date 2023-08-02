@@ -31,7 +31,11 @@ export async function getChannels(
   try {
     const id = req.params.id;
     const channels = await Channel.find({ organisation: id })
-      .populate(["collaborators", "organisation"])
+      .populate({
+        path: "organisation",
+        populate: [{ path: "owner" }, { path: "coWorkers" }],
+      })
+      .populate("collaborators")
       .sort({ _id: -1 });
     successResponse(res, channels);
   } catch (error) {

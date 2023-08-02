@@ -20,19 +20,25 @@ export default async function onboard(
       coWorkers: [req.user.id],
     });
 
-    coWorkers.map(async (email) => {
+    let updatedOrganisation: any;
+    for (const email of coWorkers) {
       try {
         const newUser = await User.create({ email });
-        await Organisation.findOneAndUpdate(
-          { _id: organisation.id },
-          { $push: { coWorkers: newUser.id } }
+        updatedOrganisation = await Organisation.findOneAndUpdate(
+          { _id: organisation._id },
+          { $push: { coWorkers: newUser._id } },
+          { new: true }
         );
       } catch (error) {
         next(error);
       }
-    });
+    }
 
-    successResponse(res, { message: "success" });
+    updatedOrganisation = await updatedOrganisation.populate([
+      "coWorkers",
+      "owner",
+    ]);
+    successResponse(res, updatedOrganisation);
   } catch (error) {
     next(error);
   }

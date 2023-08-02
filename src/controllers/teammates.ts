@@ -13,40 +13,52 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
     if (channelId) {
       const channelExist = await Channel.findById(channelId);
+      let channel: any;
       if (channelExist) {
-        emails.forEach(async (email) => {
+        for (const email of emails) {
           try {
             const newUser = await User.create({ email });
-            await Channel.findOneAndUpdate(
+            channel = await Channel.findOneAndUpdate(
               { _id: channelId },
-              { $push: { collaborators: newUser.id } }
+              { $push: { collaborators: newUser._id } },
+              { new: true }
             );
             await Organisation.findOneAndUpdate(
               { _id: organisationId },
-              { $push: { coWorkers: newUser.id } }
+              { $push: { coWorkers: newUser._id } }
             );
           } catch (error) {
             next(error);
           }
-        });
-        successResponse(res, { message: "success" });
+        }
+        channel = await channel.populate("collaborators");
+        successResponse(res, channel);
       }
     }
 
+    let organisation: any;
     if (organisationId) {
-      emails.map(async (email) => {
-        try {
-          const newUser = await User.create({ email });
-          await Organisation.findOneAndUpdate(
-            { _id: organisationId },
-            { $push: { emails: newUser.id } }
-          );
-        } catch (error) {
-          next(error);
+      const organisationExist = await Organisation.findById(organisationId);
+      if (organisationExist) {
+        for (const email of emails) {
+          try {
+            const newUser = await User.create({ email });
+            organisation = await Organisation.findOneAndUpdate(
+              { _id: organisationId },
+              { $push: { emails: newUser._id } },
+              { new: true }
+            );
+          } catch (error) {
+            next(error);
+          }
         }
-      });
-      successResponse(res, { message: "success" });
+        if (organisationId && !channelId) {
+          organisation = await organisation.populate(["coWorkers", "owner"]);
+          successResponse(res, organisation);
+        }
+      }
     }
+    
   } catch (error) {
     next(error);
   }
