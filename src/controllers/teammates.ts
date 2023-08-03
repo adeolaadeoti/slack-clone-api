@@ -13,6 +13,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { emails, channelId, organisationId, userId } = req.body;
     const channelExist = await Channel.findById(channelId);
+    let organisation: any;
 
     const invitedBy = await User.findById(req.user.id);
 
@@ -28,7 +29,20 @@ export default async (req: Request, res: Response, next: NextFunction) => {
             { new: true }
           ).populate("collaborators");
 
-          // send email to the ids
+          const user = await User.findById(id);
+
+          sendEmail(
+            user.email,
+            `${invitedBy.email} has invited you to work with them in Slack`,
+            joinTeammatesEmail(
+              invitedBy.username,
+              invitedBy.email,
+              organisation.name,
+              req.user.id,
+              organisation.joinLink,
+              organisation.url
+            )
+          );
         } catch (error) {
           next(error);
         }
@@ -51,6 +65,18 @@ export default async (req: Request, res: Response, next: NextFunction) => {
             { $push: { coWorkers: newUser._id } }
           );
           // send email to the ids
+          sendEmail(
+            email,
+            `${invitedBy.email} has invited you to work with them in Slack`,
+            joinTeammatesEmail(
+              invitedBy.username,
+              invitedBy.email,
+              organisation.name,
+              req.user.id,
+              organisation.joinLink,
+              organisation.url
+            )
+          );
         } catch (error) {
           next(error);
         }
@@ -60,7 +86,6 @@ export default async (req: Request, res: Response, next: NextFunction) => {
       // add new teammates to organisation
       const organisationExist = await Organisation.findById(organisationId);
       if (organisationExist) {
-        let organisation: any;
         for (const email of emails) {
           try {
             const newUser = await User.create({ email });
@@ -69,7 +94,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
               { $push: { coWorkers: newUser._id } },
               { new: true }
             ).populate(["coWorkers", "owner"]);
-            // send email to the ids
+
             sendEmail(
               email,
               `${invitedBy.email} has invited you to work with them in Slack`,
