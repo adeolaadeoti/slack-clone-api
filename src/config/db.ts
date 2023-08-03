@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+// import Organisation from "../models/organisation";
 
 export default async function connectDB() {
   try {
@@ -6,6 +7,23 @@ export default async function connectDB() {
       dbName: process.env.MONGODB_DB_NAME,
     });
     console.log(`MongoDB connected: ${conn.connection.host}`);
+
+    // const organizations = await Organisation.find({});
+    // for (const org of organizations) {
+    //   const url =
+    //     process.env.NODE_ENV === "development"
+    //       ? process.env.STAGING_URL
+    //       : process.env.PRODUCTION_URL;
+    //   const joinLink = `${url}/${org._id}`;
+    //   const newUrl = `${url}/${org.name}`;
+
+    //   await Organisation.updateOne(
+    //     { _id: org._id },
+    //     { $set: { url: newUrl, joinLink } }
+    //   );
+    // }
+
+    // console.log(result);
   } catch (error) {
     console.error(`Error: ${(error as any).message}`);
     process.exit(1);

@@ -28,16 +28,15 @@ export default async function onboard(
           { _id: organisation._id },
           { $push: { coWorkers: newUser._id } },
           { new: true }
-        );
+        ).populate(["coWorkers", "owner"]);
       } catch (error) {
         next(error);
       }
     }
 
-    updatedOrganisation = await updatedOrganisation.populate([
-      "coWorkers",
-      "owner",
-    ]);
+    updatedOrganisation.generateJoinLink();
+    await updatedOrganisation.save();
+
     successResponse(res, updatedOrganisation);
   } catch (error) {
     next(error);
