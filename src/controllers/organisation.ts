@@ -40,8 +40,6 @@ export async function createOrganisation(
         owner: req.user.id,
         coWorkers: [req.user.id],
       });
-      organisation.generateJoinLink();
-      await organisation.save();
 
       successResponse(res, organisation);
     }
@@ -52,6 +50,9 @@ export async function createOrganisation(
         { $set: { name } },
         { new: true }
       ).populate(["coWorkers", "owner"]);
+
+      organisation.generateJoinLink();
+      await organisation.save();
       successResponse(res, organisation);
     }
   } catch (error) {
