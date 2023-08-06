@@ -16,7 +16,7 @@ export const protect = (req, res, next) => {
     return res.status(401).json({
       success: false,
       data: {
-        message: "Not authorized to access this route",
+        name: "Not authorized to access this route",
       },
     });
   }
@@ -31,7 +31,7 @@ export const protect = (req, res, next) => {
     return res.status(401).json({
       success: false,
       data: {
-        message: "Not authorized to access this route",
+        name: "Not authorized to access this route",
       },
     });
   }

@@ -9,9 +9,9 @@ import xss from "xss-clean";
 import rateLimit from "express-rate-limit";
 import hpp from "hpp";
 import cors from "cors";
-import onboard from "./routes/onboard";
 import channel from "./routes/channel";
 import teammates from "./routes/teammates";
+import organisation from "./routes/organisation";
 import errorResponse from "./middleware/errorResponse";
 
 dotenv.config();
@@ -55,9 +55,9 @@ app.use(cors());
 
 // Routes
 app.use("/api/v1/auth", auth);
-app.use("/api/v1/onboard", onboard);
 app.use("/api/v1/channel", channel);
 app.use("/api/v1/teammates", teammates);
+app.use("/api/v1/organisation", organisation);
 
 // error handler
 app.use(errorResponse);

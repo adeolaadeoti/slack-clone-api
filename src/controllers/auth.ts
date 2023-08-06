@@ -14,11 +14,11 @@ export const register = async (
 ) => {
   const { username, email } = req.body;
 
-  if (!username || !email) {
+  if (!email) {
     return res.status(400).json({
       success: false,
       data: {
-        message: "Please provide username and email",
+        name: "Please provide your email address",
       },
     });
   }
@@ -29,7 +29,7 @@ export const register = async (
     return res.status(400).json({
       success: false,
       data: {
-        message: "User already exists",
+        name: "User already exists",
       },
     });
   }
@@ -51,7 +51,7 @@ export const register = async (
     res.status(201).json({
       success: true,
       data: {
-        message: "Verification token sent to email",
+        name: "Verification token sent to email",
       },
     });
   } catch (err) {
@@ -75,7 +75,7 @@ export const verify = async (
       return res.status(400).json({
         success: false,
         data: {
-          message: "Please provide verification token",
+          name: "Please provide verification token",
         },
       });
     }
@@ -94,7 +94,7 @@ export const verify = async (
       return res.status(400).json({
         success: false,
         data: {
-          message: "Invalid verification token",
+          name: "Invalid verification token",
         },
       });
     }

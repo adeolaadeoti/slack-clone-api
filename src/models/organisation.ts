@@ -8,7 +8,6 @@ interface OrganisationSchemaType {
   generateJoinLink: () => string;
   joinLink: string;
   url: string;
-  // logo
 }
 
 const organisationSchema = new mongoose.Schema<OrganisationSchemaType>(
@@ -19,7 +18,6 @@ const organisationSchema = new mongoose.Schema<OrganisationSchemaType>(
     },
     name: {
       type: String,
-      required: [true, "Please enter your organisation name"],
     },
     coWorkers: [
       {
