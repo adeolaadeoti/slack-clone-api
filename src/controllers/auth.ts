@@ -62,6 +62,60 @@ export const register = async (
   }
 };
 
+// @desc    Signin user
+// @route   POST /api/v1/auth/signin
+// @access  Public
+export const signin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      data: {
+        name: "Please provide your email address",
+      },
+    });
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      data: {
+        name: "User doesn't exist",
+      },
+    });
+  }
+
+  try {
+    const verificationToken = user.getVerificationCode();
+    await user.save();
+
+    sendEmail(
+      email,
+      "Slack confirmation code",
+      verificationHtml(verificationToken)
+    );
+
+    res.status(201).json({
+      success: true,
+      data: {
+        name: "Verification token sent to email",
+      },
+    });
+  } catch (err) {
+    user.loginVerificationCode = undefined;
+    user.loginVerificationCodeExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    next(err);
+  }
+};
+
 // @desc    Verify user
 // @route   POST /api/v1/auth/verify
 // @access  Public

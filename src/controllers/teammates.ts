@@ -100,7 +100,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 organisation = await Organisation.findOneAndUpdate(
                   { _id: organisationId },
                   {
-                    $addToSet: { coWorkers: existingUser._id }, // $addToSet ensures no duplicates
+                    $addToSet: { coWorkers: existingUser._id },
                   },
                   { new: true }
                 ).populate(["coWorkers", "owner"]);
