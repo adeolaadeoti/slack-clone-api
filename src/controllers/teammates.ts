@@ -85,16 +85,39 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     } else if (organisationId) {
       // add new teammates to organisation
       const organisationExist = await Organisation.findById(organisationId);
+
       if (organisationExist) {
         for (const email of emails) {
           try {
-            const newUser = await User.create({ email });
-            organisation = await Organisation.findOneAndUpdate(
-              { _id: organisationId },
-              { $push: { coWorkers: newUser._id } },
-              { new: true }
-            ).populate(["coWorkers", "owner"]);
+            const existingUser = await User.findOne({ email });
 
+            if (existingUser) {
+              // Check if existingUser is not part of coWorkers field before pushing
+              const isUserAlreadyInCoWorkers =
+                organisationExist.coWorkers.includes(String(existingUser._id));
+
+              if (!isUserAlreadyInCoWorkers) {
+                organisation = await Organisation.findOneAndUpdate(
+                  { _id: organisationId },
+                  {
+                    $addToSet: { coWorkers: existingUser._id }, // $addToSet ensures no duplicates
+                  },
+                  { new: true }
+                ).populate(["coWorkers", "owner"]);
+              }
+            } else {
+              const newUser = await User.create({ email });
+              organisation = await Organisation.findOneAndUpdate(
+                { _id: organisationId },
+                {
+                  $push: {
+                    coWorkers: newUser._id,
+                  },
+                },
+                { new: true }
+              ).populate(["coWorkers", "owner"]);
+            }
+            // vibe and inshallah
             sendEmail(
               email,
               `${invitedBy.email} has invited you to work with them in Slack`,
@@ -111,6 +134,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
             next(error);
           }
         }
+
         if (!channelId) {
           successResponse(res, organisation);
         }

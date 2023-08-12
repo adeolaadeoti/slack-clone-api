@@ -19,7 +19,9 @@ const userSchema = new mongoose.Schema<UserSchemaType>(
   {
     username: {
       type: String,
-      // required: [true, "Please enter your name"],
+      default() {
+        return this.email.split("@")[0];
+      },
     },
     email: {
       type: String,
