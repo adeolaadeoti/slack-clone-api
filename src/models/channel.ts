@@ -32,9 +32,6 @@ const channelSchema = new mongoose.Schema<ChannelSchemaType>(
     },
     description: {
       type: String,
-      default() {
-        return `This channel is for everything ${this.name}. Hold meetings, share docs, and make decisions together with your team.`;
-      },
     },
     organisation: {
       type: mongoose.Schema.Types.ObjectId,
