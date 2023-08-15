@@ -91,8 +91,21 @@ export async function getWorkspaces(
 ) {
   try {
     const id = req.user.id;
-    console.log(id);
+    // Find all organizations where the user is a co-worker
     const workspaces = await Organisation.find({ coWorkers: id });
+    // Fetch channels for each organization
+    const workspacesWithChannels = await Promise.all(
+      workspaces.map(async (workspace) => {
+        const channels = await Channel.find({ organisation: workspace._id });
+        return {
+          ...workspace.toObject(),
+          channels,
+        };
+      })
+    );
+
+    successResponse(res, workspacesWithChannels);
+
     successResponse(res, workspaces);
   } catch (error) {
     next(error);

@@ -42,3 +42,19 @@ export async function getChannels(
     next(error);
   }
 }
+
+export async function getChannel(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const id = req.params.id;
+    const channel = await Channel.findById(id)
+      .populate("collaborators")
+      .sort({ _id: -1 });
+    successResponse(res, channel);
+  } catch (error) {
+    next(error);
+  }
+}
