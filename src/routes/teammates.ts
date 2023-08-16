@@ -1,9 +1,10 @@
 import express from "express";
-import teammates from "../controllers/teammates";
+import { createTeammates, getTeammate } from "../controllers/teammates";
 import { protect } from "../middleware/protect";
 
 const router = express.Router();
 
-router.post("/", protect, teammates);
+router.get("/:id", protect, getTeammate);
+router.post("/", protect, createTeammates);
 
 export default router;

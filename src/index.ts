@@ -12,6 +12,7 @@ import cors from "cors";
 import channel from "./routes/channel";
 import teammates from "./routes/teammates";
 import organisation from "./routes/organisation";
+import conversations from "./routes/conversations";
 import errorResponse from "./middleware/errorResponse";
 
 dotenv.config();
@@ -58,6 +59,7 @@ app.use("/api/v1/auth", auth);
 app.use("/api/v1/channel", channel);
 app.use("/api/v1/teammates", teammates);
 app.use("/api/v1/organisation", organisation);
+app.use("/api/v1/conversations", conversations);
 
 // error handler
 app.use(errorResponse);

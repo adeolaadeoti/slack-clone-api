@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Organisation from "../models/organisation";
+import Conversation from "../models/conversations";
 import successResponse from "../helpers/successResponse";
 import Channel from "../models/channel";
 import User from "../models/user";
@@ -9,7 +10,11 @@ import { joinTeammatesEmail } from "../html/join-teammates-email";
 // @desc    add teammates to either organisation or a channel
 // @route   POST /api/v1/teammates
 // @access  Private
-export default async (req: Request, res: Response, next: NextFunction) => {
+export async function createTeammates(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const { emails, channelId, organisationId, userId } = req.body;
     const channelExist = await Channel.findById(channelId);
@@ -116,6 +121,15 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 },
                 { new: true }
               ).populate(["coWorkers", "owner"]);
+
+              // yet to be tested
+              await Conversation.create({
+                name: `${newUser.username}`,
+                description: `This conversation is just between ${newUser.username} and you`,
+                createdBy: newUser._id,
+                organisation: organisationId,
+                collaborators: [newUser._id],
+              });
             }
             // vibe and inshallah
             sendEmail(
@@ -143,4 +157,28 @@ export default async (req: Request, res: Response, next: NextFunction) => {
   } catch (error) {
     next(error);
   }
-};
+}
+
+// @desc    get a teammate of an organisation
+// @route   GET /api/v1/teammates
+// @access  Private
+export async function getTeammate(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const coworkerId = req.params.id;
+    const coworker = await User.findById(coworkerId);
+    console.log(coworker);
+    if (!coworker) {
+      return res.status(400).json({
+        name: "Coworker not found",
+      });
+    }
+
+    return successResponse(res, coworker);
+  } catch (error) {
+    next(error);
+  }
+}

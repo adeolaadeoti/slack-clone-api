@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Organisation from "../models/organisation";
 import successResponse from "../helpers/successResponse";
 import Channel from "../models/channel";
+import Conversations from "../models/conversations";
 
 // @desc    get organisation
 // @route   GET /api/v1/organisation/:id
@@ -23,19 +24,22 @@ export async function getOrganisation(
         organisation: id,
       }).populate("collaborators");
 
-      // Iterate through coWorkers and update the isLoggedIn field
-      const updatedCoWorkers = organisation.coWorkers.map((coworker: any) => {
-        if (coworker._id.toString() === req.user.id) {
-          return { ...coworker.toObject(), isLoggedIn: true };
-        } else {
-          return { ...coworker.toObject(), isLoggedIn: false };
-        }
+      const conversations = await Conversations.find({
+        organisation: id,
       });
+
+      // Update the isLoggedIn field based on req.user.id
+      const updatedConversations = conversations.map((convo) => ({
+        ...convo.toObject(),
+        isLoggedIn: convo.collaborators.some(
+          (coworker: any) => coworker._id.toString() === req.user.id
+        ),
+      }));
 
       // Update the coWorkers array in the organisation object
       const updatedOrganisation = {
         ...organisation.toObject(),
-        coWorkers: updatedCoWorkers,
+        conversations: updatedConversations,
         channels,
       };
 

@@ -4,7 +4,7 @@ interface OrganisationSchemaType {
   owner: mongoose.Schema.Types.ObjectId;
   name: string;
   hobbies: string[];
-  coWorkers: string[];
+  coWorkers: any[];
   generateJoinLink: () => string;
   joinLink: string;
   url: string;

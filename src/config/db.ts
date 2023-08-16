@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 // import Organisation from "../models/organisation";
+// import Conversation from "../models/conversations";
 
 export default async function connectDB() {
   try {
@@ -13,22 +14,24 @@ export default async function connectDB() {
   }
 }
 
-// async function runOrganisationMigration(Organisation: any) {
+// async function runOrganisationMigration() {
 //   try {
-//     const organizations = await Organisation.find({});
-//     for (const org of organizations) {
-//       const url =
-//         process.env.NODE_ENV === "development"
-//           ? process.env.STAGING_URL
-//           : process.env.PRODUCTION_URL;
-//       const joinLink = `${url}/${org._id}`;
-//       const newUrl = `${url}/${org.name}`;
-//       await Organisation.updateOne(
-//         { _id: org._id },
-//         { $set: { url: newUrl, joinLink } }
-//       );
+//     const organisations = await Organisation.find({}).populate("coWorkers");
+//     for (const organisation of organisations) {
+//       for (const coWorker of organisation.coWorkers) {
+//         await Conversation.create({
+//           name: `${coWorker.username}`,
+//           description: `This conversation is just between ${coWorker.username} and you`,
+//           createdBy: coWorker,
+//           organisation: organisation._id,
+//           collaborators: [coWorker._id],
+//         });
+//       }
 //     }
 //   } catch (error) {
+//     console.error(`Error: ${(error as any).message}`);
 //     process.exit(1);
 //   }
 // }
+
+// runOrganisationMigration();
