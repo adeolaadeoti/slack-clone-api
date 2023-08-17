@@ -28,6 +28,12 @@ export async function getConversation(
     const channel = await Conversations.findById(id)
       .populate(["collaborators", "createdBy"])
       .sort({ _id: -1 });
+
+    if (!channel) {
+      return res.status(400).json({
+        name: "not found",
+      });
+    }
     // Check if the createdBy user's _id matches req.user.id
     const isOwner = channel.createdBy._id.toString() === req.user.id;
 
