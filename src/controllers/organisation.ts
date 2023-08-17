@@ -20,6 +20,12 @@ export async function getOrganisation(
         "owner",
       ]);
 
+      if (!organisation) {
+        res.status(400, {
+          name: "no organisation found",
+        });
+      }
+
       const channels = await Channel.find({
         organisation: id,
       }).populate("collaborators");
@@ -36,11 +42,26 @@ export async function getOrganisation(
         ),
       }));
 
+      // Check if the authenticated user is a co-worker of the organisation
+      const currentUserIsCoWorker = organisation.coWorkers.some(
+        (coworker: any) => coworker._id.toString() === req.user.id
+      );
+
+      // Replace the profile object with the corresponding co-worker's values
+      let profile: any = {};
+      if (currentUserIsCoWorker) {
+        const currentUser = organisation.coWorkers.find(
+          (coworker: any) => coworker._id.toString() === req.user.id
+        );
+        profile = currentUser;
+      }
+
       // Update the coWorkers array in the organisation object
       const updatedOrganisation = {
         ...organisation.toObject(),
         conversations: updatedConversations,
         channels,
+        profile,
       };
 
       successResponse(res, updatedOrganisation);
