@@ -68,20 +68,36 @@ app.use(cors());
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  socket.on("message", async ({ channelId, message }) => {
-    try {
-      await Message.create({
-        sender: message.sender,
-        content: message.content,
-        channel: channelId,
-      });
-      // io.emit("message", { channelId, message });
-      // Broadcast the message to all connected clients
-      io.to(channelId).emit("message", { channelId, message });
-    } catch (error) {
-      console.log(error);
+  socket.on(
+    "message",
+    async ({ channelId, conversationId, collaborators, isSelf, message }) => {
+      try {
+        if (channelId) {
+          socket.join(channelId);
+          await Message.create({
+            sender: message.sender,
+            content: message.content,
+            channel: channelId,
+          });
+          io.to(channelId).emit("message", message);
+          return;
+        } else if (conversationId) {
+          socket.join(conversationId);
+          await Message.create({
+            sender: message.sender,
+            content: message.content,
+            conversation: conversationId,
+            collaborators,
+            isSelf,
+          });
+          io.to(conversationId).emit("message", message);
+          return;
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
-  });
+  );
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");

@@ -25,22 +25,23 @@ export async function getConversation(
 ) {
   try {
     const id = req.params.id;
-    const channel = await Conversations.findById(id)
+    const conversation = await Conversations.findById(id)
       .populate(["collaborators", "createdBy"])
       .sort({ _id: -1 });
 
-    if (!channel) {
+    if (!conversation) {
       return res.status(400).json({
         name: "not found",
       });
     }
     // Check if the createdBy user's _id matches req.user.id
-    const isOwner = channel.createdBy._id.toString() === req.user.id;
+    const isOwner = conversation.createdBy._id.toString() === req.user.id;
 
     // Add isOwner field to the channel object
     const channelWithOwnerStatus = {
-      ...channel.toObject(),
+      ...conversation.toObject(),
       isOwner,
+      isConversation: true,
     };
 
     successResponse(res, channelWithOwnerStatus);

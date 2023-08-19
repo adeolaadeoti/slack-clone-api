@@ -37,6 +37,7 @@ export async function getChannels(
       })
       .populate("collaborators")
       .sort({ _id: -1 });
+
     successResponse(res, channels);
   } catch (error) {
     next(error);
@@ -53,7 +54,19 @@ export async function getChannel(
     const channel = await Channel.findById(id)
       .populate("collaborators")
       .sort({ _id: -1 });
-    successResponse(res, channel);
+
+    if (!channel) {
+      return res.status(400).json({
+        name: "not found",
+      });
+    }
+
+    const updatedChannel = {
+      ...channel.toObject(),
+      isChannel: true,
+    };
+
+    successResponse(res, updatedChannel);
   } catch (error) {
     next(error);
   }

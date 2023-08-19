@@ -12,13 +12,41 @@ export async function getMessages(
 ) {
   try {
     const channelId = req.query.channelId;
+    const isSelf = req.query.isSelf;
+    const collaborators = req.query.collaborators;
     if (channelId) {
       const channel = await Message.find({
         channel: channelId,
       }).populate("sender");
       successResponse(res, channel);
+    } else if (collaborators) {
+      let conversation;
+      const collaboratorsArray = collaborators.split(",");
+
+      if (collaboratorsArray.length === 2) {
+        if (isSelf) {
+          conversation = await Message.find({
+            $and: [
+              { collaborators: collaboratorsArray[0] },
+              { collaborators: collaboratorsArray[1] },
+              { isSelf },
+            ],
+          }).populate("sender");
+        } else {
+          conversation = await Message.find({
+            $and: [
+              { collaborators: collaboratorsArray[0] },
+              { collaborators: collaboratorsArray[1] },
+            ],
+          }).populate("sender");
+        }
+
+        successResponse(res, conversation);
+      } else {
+        res.status(400).json({});
+      }
     } else {
-      successResponse(res, []);
+      res.status(400).json({});
     }
   } catch (error) {
     next(error);
