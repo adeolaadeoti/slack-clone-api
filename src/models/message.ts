@@ -10,6 +10,7 @@ interface MessageSchemaType {
   replies: mongoose.Schema.Types.ObjectId[];
   isBookmarked: boolean;
   isSelf: boolean;
+  hasRead: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,6 +57,10 @@ const messageSchema = new mongoose.Schema<MessageSchemaType>(
       default: false,
     },
     isSelf: {
+      type: Boolean,
+      default: false,
+    },
+    hasRead: {
       type: Boolean,
       default: false,
     },

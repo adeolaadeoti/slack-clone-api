@@ -66,11 +66,18 @@ app.use(cors());
 
 // Set up WebSocket connections
 io.on("connection", (socket) => {
-  console.log("A user connected");
+  // console.log("A user connected");
 
   socket.on(
     "message",
-    async ({ channelId, conversationId, collaborators, isSelf, message }) => {
+    async ({
+      channelId,
+      channelName,
+      conversationId,
+      collaborators,
+      isSelf,
+      message,
+    }) => {
       try {
         if (channelId) {
           socket.join(channelId);
@@ -78,8 +85,14 @@ io.on("connection", (socket) => {
             sender: message.sender,
             content: message.content,
             channel: channelId,
+            hasRead: false,
           });
-          io.to(channelId).emit("message", message);
+          socket.broadcast.emit("notification", {
+            channelName,
+            collaborators,
+            message,
+          });
+          io.to(channelId).emit("message", { message });
           return;
         } else if (conversationId) {
           socket.join(conversationId);
@@ -89,8 +102,10 @@ io.on("connection", (socket) => {
             conversation: conversationId,
             collaborators,
             isSelf,
+            hasRead: false,
           });
-          io.to(conversationId).emit("message", message);
+          socket.broadcast.emit("notification", { collaborators, message });
+          io.to(conversationId).emit("message", { collaborators, message });
           return;
         }
       } catch (error) {
