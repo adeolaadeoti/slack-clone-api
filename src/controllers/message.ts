@@ -14,9 +14,11 @@ export async function getMessages(
     const channelId = req.query.channelId;
     const isSelf = req.query.isSelf;
     const collaborators = req.query.collaborators;
+    const organisation = req.query.organisation;
     if (channelId) {
       const channel = await Message.find({
         channel: channelId,
+        organisation,
       }).populate("sender");
       successResponse(res, channel);
     } else if (collaborators) {
@@ -30,6 +32,7 @@ export async function getMessages(
               { collaborators: collaboratorsArray[0] },
               { collaborators: collaboratorsArray[1] },
               { isSelf },
+              { organisation },
             ],
           }).populate("sender");
         } else {
@@ -37,6 +40,7 @@ export async function getMessages(
             $and: [
               { collaborators: collaboratorsArray[0] },
               { collaborators: collaboratorsArray[1] },
+              { organisation },
             ],
           }).populate("sender");
         }

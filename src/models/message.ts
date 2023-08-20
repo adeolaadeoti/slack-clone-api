@@ -4,6 +4,7 @@ interface MessageSchemaType {
   sender: mongoose.Schema.Types.ObjectId;
   content: string;
   channel: mongoose.Schema.Types.ObjectId;
+  organisation: mongoose.Schema.Types.ObjectId;
   conversation: mongoose.Schema.Types.ObjectId;
   collaborators: mongoose.Schema.Types.ObjectId[];
   reactions: mongoose.Schema.Types.ObjectId[];
@@ -25,6 +26,10 @@ const messageSchema = new mongoose.Schema<MessageSchemaType>(
     channel: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Channel",
+    },
+    organisation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organisation",
     },
     conversation: {
       type: mongoose.Schema.Types.ObjectId,
