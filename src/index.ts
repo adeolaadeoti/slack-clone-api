@@ -16,6 +16,7 @@ import organisation from "./routes/organisation";
 import conversations from "./routes/conversations";
 import errorResponse from "./middleware/errorResponse";
 import Message from "../src/models/message";
+import User from "../src/models/user";
 import { Server } from "socket.io";
 import http from "http";
 
@@ -67,6 +68,18 @@ app.use(cors());
 // Set up WebSocket connections
 io.on("connection", (socket) => {
   console.log("A user connected");
+
+  socket.on("user-join", async (id) => {
+    socket.join(id);
+    await User.findByIdAndUpdate(id, { isOnline: true });
+    io.emit("user-join", { id, isOnline: true });
+
+    socket.on("disconnect", async () => {
+      socket.leave(id);
+      await User.findByIdAndUpdate(id, { isOnline: false });
+      io.emit("user-join", { id, isOnline: false });
+    });
+  });
 
   socket.on(
     "message",

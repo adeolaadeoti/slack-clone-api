@@ -32,7 +32,7 @@ export async function getOrganisation(
 
       const conversations = await Conversations.find({
         organisation: id,
-      });
+      }).populate(["createdBy"]);
 
       // Update the isLoggedIn field based on req.user.id
       const updatedConversations = conversations.map((convo) => ({
