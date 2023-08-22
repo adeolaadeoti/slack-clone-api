@@ -13,10 +13,13 @@ import channel from "./routes/channel";
 import message from "./routes/message";
 import teammates from "./routes/teammates";
 import organisation from "./routes/organisation";
-import conversations from "./routes/conversations";
+
 import errorResponse from "./middleware/errorResponse";
 import Message from "../src/models/message";
 import User from "../src/models/user";
+import Channels from "../src/models/channel";
+import Conversations from "../src/models/conversations";
+import conversations from "./routes/conversations";
 import { Server } from "socket.io";
 import http from "http";
 
@@ -105,9 +108,13 @@ io.on("connection", (socket) => {
           io.to(channelId).emit("message", { message, organisation });
           socket.broadcast.emit("notification", {
             channelName,
+            channelId,
             collaborators,
             message,
             organisation,
+          });
+          await Channels.findByIdAndUpdate(channelId, {
+            hasUnreadMessages: true,
           });
         } else if (conversationId) {
           socket.join(conversationId);
@@ -129,6 +136,14 @@ io.on("connection", (socket) => {
             collaborators,
             organisation,
             message,
+            conversationId,
+          });
+          socket.broadcast.emit("notification-layout", {
+            collaborators,
+            conversationId,
+          });
+          await Conversations.findByIdAndUpdate(conversationId, {
+            hasUnreadMessages: true,
           });
         }
       } catch (error) {

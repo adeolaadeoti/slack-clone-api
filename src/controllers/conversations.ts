@@ -26,7 +26,7 @@ export async function getConversation(
   try {
     const id = req.params.id;
     const conversation = await Conversations.findById(id)
-      .populate(["collaborators", "createdBy"])
+      .populate(["collaborators"])
       .sort({ _id: -1 });
 
     if (!conversation) {
@@ -34,17 +34,27 @@ export async function getConversation(
         name: "not found",
       });
     }
-    // Check if the createdBy user's _id matches req.user.id
-    const isOwner = conversation.createdBy._id.toString() === req.user.id;
 
-    // Add isOwner field to the channel object
-    const channelWithOwnerStatus = {
-      ...conversation.toObject(),
-      isOwner,
-      isConversation: true,
-    };
+    const conversations = await Conversations.findById(id).populate(
+      "collaborators"
+    );
+    const collaborators = [...conversations.collaborators];
+    // Find the index of the collaborator with the current user's ID
+    const currentUserIndex = conversations.collaborators.findIndex(
+      (coworker: any) => coworker._id.toString() === req.user.id
+    );
 
-    successResponse(res, channelWithOwnerStatus);
+    //   // Remove the current user collaborator from the array
+    conversations.collaborators.splice(currentUserIndex, 1);
+
+    //   // Create the name field based on the other collaborator's username
+    const name = (conversations.collaborators[0] as any)?.username;
+
+    successResponse(res, {
+      ...conversations.toObject(),
+      name,
+      collaborators,
+    });
   } catch (error) {
     next(error);
   }

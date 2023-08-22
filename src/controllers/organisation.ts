@@ -32,15 +32,36 @@ export async function getOrganisation(
 
       const conversations = await Conversations.find({
         organisation: id,
-      }).populate(["createdBy"]);
+      }).populate("collaborators");
 
-      // Update the isLoggedIn field based on req.user.id
-      const updatedConversations = conversations.map((convo) => ({
-        ...convo.toObject(),
-        isLoggedIn: convo.collaborators.some(
+      const conversationsWithCurrentUser = conversations.filter(
+        (conversation) =>
+          conversation.collaborators.some(
+            (collaborator: any) => collaborator._id.toString() === req.user.id
+          )
+      );
+
+      const updatedConversations = conversationsWithCurrentUser.map((convo) => {
+        // Find the index of the collaborator with the current user's ID
+        const currentUserIndex = convo.collaborators.findIndex(
           (coworker: any) => coworker._id.toString() === req.user.id
-        ),
-      }));
+        );
+
+        const collaborators = [...convo.collaborators];
+
+        // Remove the current user collaborator from the array
+        convo.collaborators.splice(currentUserIndex, 1);
+
+        // Create the name field based on the other collaborator's username
+        const name = (convo.collaborators[0] as any)?.username;
+
+        return {
+          ...convo.toObject(),
+          name,
+          createdById: (convo.collaborators[0] as any)?._id,
+          collaborators,
+        };
+      });
 
       // Check if the authenticated user is a co-worker of the organisation
       const currentUserIsCoWorker = organisation.coWorkers.some(

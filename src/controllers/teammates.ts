@@ -121,16 +121,8 @@ export async function createTeammates(
                 },
                 { new: true }
               ).populate(["coWorkers", "owner"]);
-
-              // yet to be tested
-              await Conversation.create({
-                name: `${newUser.username}`,
-                description: `This conversation is just between ${newUser.username} and you`,
-                createdBy: newUser._id,
-                organisation: organisationId,
-                collaborators: [newUser._id],
-              });
             }
+
             // vibe and inshallah
             sendEmail(
               email,
@@ -146,6 +138,22 @@ export async function createTeammates(
             );
           } catch (error) {
             next(error);
+          }
+        }
+        // Create separate conversations for each unique pair of coWorkers
+        for (let i = 0; i < organisation.coWorkers.length; i++) {
+          for (let j = i; j < organisation.coWorkers.length; j++) {
+            await Conversation.create({
+              name: `${organisation.coWorkers[i].username}, ${organisation.coWorkers[j].username}`,
+              description: `This conversation is between ${organisation.coWorkers[i].username} and ${organisation.coWorkers[j].username}`,
+              organisation: organisationId,
+              isSelf:
+                organisation.coWorkers[i]._id === organisation.coWorkers[j]._id,
+              collaborators: [
+                organisation.coWorkers[i]._id,
+                organisation.coWorkers[j]._id,
+              ],
+            });
           }
         }
 

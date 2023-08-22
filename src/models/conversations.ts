@@ -2,11 +2,13 @@ import mongoose from "mongoose";
 
 interface ConversationSchemaType {
   name: string;
-  createdBy: mongoose.Schema.Types.ObjectId & { _id: string };
   collaborators: mongoose.Schema.Types.ObjectId[];
   title: string;
   description: string;
+  isSelf: boolean;
   organisation: mongoose.Schema.Types.ObjectId;
+  hasUnreadMessages: boolean;
+  isConversation: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,10 +24,6 @@ const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
         return "";
       },
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
     collaborators: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -38,9 +36,21 @@ const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
         return `This conversation is just between ${this.name} and you`;
       },
     },
+    isSelf: {
+      type: Boolean,
+      default: false,
+    },
+    isConversation: {
+      type: Boolean,
+      default: true,
+    },
     organisation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organisation",
+    },
+    hasUnreadMessages: {
+      type: Boolean,
+      default: false,
     },
   },
   {
