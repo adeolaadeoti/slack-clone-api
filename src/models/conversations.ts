@@ -7,8 +7,10 @@ interface ConversationSchemaType {
   description: string;
   isSelf: boolean;
   organisation: mongoose.Schema.Types.ObjectId;
+  createdBy: mongoose.Schema.Types.ObjectId;
   hasUnreadMessages: boolean;
   isConversation: boolean;
+  isOnline: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +49,14 @@ const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
     organisation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organisation",
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    isOnline: {
+      type: Boolean,
+      default: false,
     },
     hasUnreadMessages: {
       type: Boolean,

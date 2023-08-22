@@ -58,7 +58,7 @@ export async function getOrganisation(
         return {
           ...convo.toObject(),
           name,
-          createdById: (convo.collaborators[0] as any)?._id,
+          createdBy: (convo.collaborators[0] as any)?._id,
           collaborators,
         };
       });
