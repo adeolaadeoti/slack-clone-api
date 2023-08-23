@@ -15,12 +15,13 @@ import teammates from "./routes/teammates";
 import organisation from "./routes/organisation";
 import errorResponse from "./middleware/errorResponse";
 import Message from "../src/models/message";
-import User from "../src/models/user";
+// import User from "../src/models/user";
 import Channels from "../src/models/channel";
 import Conversations from "../src/models/conversations";
 import conversations from "./routes/conversations";
 import { Server } from "socket.io";
 import http from "http";
+import updateUserStatus from "./helpers/updateUserStatus";
 
 dotenv.config();
 
@@ -69,71 +70,17 @@ app.use(cors());
 
 // Set up WebSocket connections
 io.on("connection", (socket) => {
-  // console.log("A user connected");
-  socket.on("user-join", async (id) => {
+  socket.on("user-join", async ({ id, isOnline }) => {
     socket.join(id);
-    await User.findByIdAndUpdate(id, { isOnline: true });
-    io.emit("user-join", { id, isOnline: true });
-
-    socket.on("disconnect", async () => {
-      socket.leave(id);
-      await User.findByIdAndUpdate(id, { isOnline: false });
-      io.emit("user-join", { id, isOnline: false });
-    });
+    await updateUserStatus(id, isOnline);
+    io.emit("user-join", { id, isOnline });
   });
 
-  socket.on("update-conversation", async (newConvo) => {
-    const user = await User.findById(newConvo.createdBy);
-    const conversationIdToUpdate = newConvo._id;
-
-    const conversationToUpdate = await Conversations.findOne({
-      _id: conversationIdToUpdate,
-      createdBy: user._id,
-    }).populate("collaborators");
-
-    if (conversationToUpdate) {
-      // Find the collaborator with matching _id
-      const collaboratorToUpdate: any = conversationToUpdate.collaborators.find(
-        (collaborator: any) =>
-          collaborator?._id.toString() === user._id.toString()
-      );
-
-      if (collaboratorToUpdate) {
-        // Update the conversation's isOnline field based on collaborator's isOnline status
-        conversationToUpdate.isOnline = collaboratorToUpdate.isOnline;
-
-        // Save the updated conversation
-        await conversationToUpdate.save();
-
-        console.log("Conversation updated:", conversationToUpdate);
-      } else {
-        console.log("Collaborator not found in conversation");
-      }
-    } else {
-      console.log("Conversation not found");
-    }
+  socket.on("user-leave", async ({ id, isOnline }) => {
+    socket.leave(id);
+    await updateUserStatus(id, isOnline);
+    io.emit("user-leave", { id, isOnline });
   });
-
-  // socket.on("update-conversation", async (newConvo) => {
-  //   const user = await User.findById(newConvo.createdBy);
-  //   await Conversations.findOneAndUpdate(
-  //     { _id: newConvo._id, createdBy: user._id },
-  //     { isOnline: user.isOnline },
-  //     {
-  //       new: true,
-  //     }
-  //   );
-
-  //   socket.on("disconnect", async () => {
-  //     // await Conversations.findOneAndUpdate(
-  //     //   { _id: newConvo._id, createdBy: user._id },
-  //     //   { isOnline: false },
-  //     //   {
-  //     //     new: true,
-  //     //   }
-  //     // );
-  //   });
-  // });
 
   socket.on(
     "message",
@@ -203,8 +150,16 @@ io.on("connection", (socket) => {
     }
   );
 
-  socket.on("disconnect", () => {
-    // console.log("A user disconnected");
+  socket.on("message-view", async (messageId) => {
+    await Message.findByIdAndUpdate(messageId, {
+      hasRead: true,
+    });
+    if (message) {
+      console.log(message);
+      io.emit("message-view", messageId);
+    } else {
+      console.log("message not found");
+    }
   });
 });
 

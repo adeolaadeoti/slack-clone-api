@@ -178,7 +178,7 @@ export async function getTeammate(
   try {
     const coworkerId = req.params.id;
     const coworker = await User.findById(coworkerId);
-    console.log(coworker);
+    // console.log(coworker);
     if (!coworker) {
       return res.status(400).json({
         name: "Coworker not found",
