@@ -7,7 +7,7 @@ interface ChannelSchemaType {
   title: string;
   description: string;
   organisation: mongoose.Schema.Types.ObjectId;
-  hasUnreadMessages: boolean;
+  hasNotOpen: mongoose.Schema.Types.ObjectId[];
   isChannel: boolean;
   // conversations: mongoose.Schema.Types.ObjectId[];
   createdAt: Date;
@@ -39,10 +39,12 @@ const channelSchema = new mongoose.Schema<ChannelSchemaType>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organisation",
     },
-    hasUnreadMessages: {
-      type: Boolean,
-      default: false,
-    },
+    hasNotOpen: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     isChannel: {
       type: Boolean,
       default: true,

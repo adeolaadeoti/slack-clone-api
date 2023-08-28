@@ -8,7 +8,7 @@ interface ConversationSchemaType {
   isSelf: boolean;
   organisation: mongoose.Schema.Types.ObjectId;
   createdBy: mongoose.Schema.Types.ObjectId;
-  hasUnreadMessages: boolean;
+  hasNotOpen: mongoose.Schema.Types.ObjectId[];
   isConversation: boolean;
   isOnline: boolean;
   createdAt: Date;
@@ -58,10 +58,12 @@ const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
       type: Boolean,
       default: false,
     },
-    hasUnreadMessages: {
-      type: Boolean,
-      default: false,
-    },
+    hasNotOpen: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,

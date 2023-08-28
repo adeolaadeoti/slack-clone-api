@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db";
 import auth from "./routes/auth";
 import cookieParser from "cookie-parser";
-import morgan from "morgan";
+// import morgan from "morgan";
 import helmet from "helmet";
 import xss from "xss-clean";
 import rateLimit from "express-rate-limit";
@@ -17,7 +17,7 @@ import errorResponse from "./middleware/errorResponse";
 import Message from "../src/models/message";
 // import User from "../src/models/user";
 import Channels from "../src/models/channel";
-import Conversations from "../src/models/conversations";
+// import Conversations from "../src/models/conversations";
 import conversations from "./routes/conversations";
 import { Server } from "socket.io";
 import http from "http";
@@ -45,9 +45,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Dev logging middleware
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
+// if (process.env.NODE_ENV === "development") {
+//   app.use(morgan("dev"));
+// }
 
 // Set security headers
 app.use(helmet());
@@ -82,6 +82,19 @@ io.on("connection", (socket) => {
     io.emit("user-leave", { id, isOnline });
   });
 
+  socket.on("channel-open", async ({ id, userId }) => {
+    if (id) {
+      socket.join(id);
+      // const updatedChannel =
+      await Channels.findByIdAndUpdate(
+        id,
+        { $pull: { hasNotOpen: userId } },
+        { new: true }
+      );
+      // io.to(id).emit("channel-updated", updatedChannel);
+    }
+  });
+
   socket.on(
     "message",
     async ({
@@ -92,6 +105,7 @@ io.on("connection", (socket) => {
       isSelf,
       message,
       organisation,
+      hasNotOpen,
     }) => {
       try {
         if (channelId) {
@@ -103,16 +117,19 @@ io.on("connection", (socket) => {
             channel: channelId,
             hasRead: false,
           });
+          const updatedChannel = await Channels.findByIdAndUpdate(
+            channelId,
+            { hasNotOpen },
+            { new: true }
+          );
           io.to(channelId).emit("message", { message, organisation });
+          io.to(channelId).emit("channel-updated", updatedChannel);
           socket.broadcast.emit("notification", {
             channelName,
             channelId,
             collaborators,
             message,
             organisation,
-          });
-          await Channels.findByIdAndUpdate(channelId, {
-            hasUnreadMessages: true,
           });
         } else if (conversationId) {
           socket.join(conversationId);
@@ -125,6 +142,9 @@ io.on("connection", (socket) => {
             isSelf,
             hasRead: false,
           });
+          // await Conversations.findByIdAndUpdate(conversationId, {
+          //   hasNotOpen,
+          // });
           io.to(conversationId).emit("message", {
             collaborators,
             organisation,
@@ -139,9 +159,6 @@ io.on("connection", (socket) => {
           socket.broadcast.emit("notification-layout", {
             collaborators,
             conversationId,
-          });
-          await Conversations.findByIdAndUpdate(conversationId, {
-            hasUnreadMessages: true,
           });
         }
       } catch (error) {
