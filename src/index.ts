@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db";
 import auth from "./routes/auth";
 import cookieParser from "cookie-parser";
-// import morgan from "morgan";
+import morgan from "morgan";
 import helmet from "helmet";
 import xss from "xss-clean";
 import rateLimit from "express-rate-limit";
@@ -17,7 +17,7 @@ import errorResponse from "./middleware/errorResponse";
 import Message from "../src/models/message";
 // import User from "../src/models/user";
 import Channels from "../src/models/channel";
-// import Conversations from "../src/models/conversations";
+import Conversations from "../src/models/conversations";
 import conversations from "./routes/conversations";
 import { Server } from "socket.io";
 import http from "http";
@@ -45,9 +45,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Dev logging middleware
-// if (process.env.NODE_ENV === "development") {
-//   app.use(morgan("dev"));
-// }
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
 
 // Set security headers
 app.use(helmet());
@@ -85,13 +85,23 @@ io.on("connection", (socket) => {
   socket.on("channel-open", async ({ id, userId }) => {
     if (id) {
       socket.join(id);
-      // const updatedChannel =
-      await Channels.findByIdAndUpdate(
+      const updatedChannel = await Channels.findByIdAndUpdate(
         id,
         { $pull: { hasNotOpen: userId } },
         { new: true }
       );
-      // io.to(id).emit("channel-updated", updatedChannel);
+      io.to(id).emit("channel-updated", updatedChannel);
+    }
+  });
+  socket.on("convo-open", async ({ id, userId }) => {
+    if (id) {
+      socket.join(id);
+      const updatedConversation = await Conversations.findByIdAndUpdate(
+        id,
+        { $pull: { hasNotOpen: userId } },
+        { new: true }
+      );
+      io.to(id).emit("convo-updated", updatedConversation);
     }
   });
 
@@ -142,14 +152,17 @@ io.on("connection", (socket) => {
             isSelf,
             hasRead: false,
           });
-          // await Conversations.findByIdAndUpdate(conversationId, {
-          //   hasNotOpen,
-          // });
+          const updatedConversation = await Conversations.findByIdAndUpdate(
+            conversationId,
+            { hasNotOpen },
+            { new: true }
+          );
           io.to(conversationId).emit("message", {
             collaborators,
             organisation,
             message,
           });
+          io.to(conversationId).emit("convo-updated", updatedConversation);
           socket.broadcast.emit("notification", {
             collaborators,
             organisation,
