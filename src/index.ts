@@ -120,6 +120,7 @@ io.on("connection", (socket) => {
       try {
         if (channelId) {
           socket.join(channelId);
+          io.to(channelId).emit("message", { message, organisation });
           await Message.create({
             organisation,
             sender: message.sender,
@@ -132,7 +133,6 @@ io.on("connection", (socket) => {
             { hasNotOpen },
             { new: true }
           );
-          io.to(channelId).emit("message", { message, organisation });
           io.to(channelId).emit("channel-updated", updatedChannel);
           socket.broadcast.emit("notification", {
             channelName,
@@ -143,6 +143,11 @@ io.on("connection", (socket) => {
           });
         } else if (conversationId) {
           socket.join(conversationId);
+          io.to(conversationId).emit("message", {
+            collaborators,
+            organisation,
+            message,
+          });
           await Message.create({
             organisation,
             sender: message.sender,
@@ -157,20 +162,11 @@ io.on("connection", (socket) => {
             { hasNotOpen },
             { new: true }
           );
-          io.to(conversationId).emit("message", {
-            collaborators,
-            organisation,
-            message,
-          });
           io.to(conversationId).emit("convo-updated", updatedConversation);
           socket.broadcast.emit("notification", {
             collaborators,
             organisation,
             message,
-            conversationId,
-          });
-          socket.broadcast.emit("notification-layout", {
-            collaborators,
             conversationId,
           });
         }
@@ -185,7 +181,6 @@ io.on("connection", (socket) => {
       hasRead: true,
     });
     if (message) {
-      console.log(message);
       io.emit("message-view", messageId);
     } else {
       console.log("message not found");
