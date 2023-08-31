@@ -7,7 +7,10 @@ interface MessageSchemaType {
   organisation: mongoose.Schema.Types.ObjectId;
   conversation: mongoose.Schema.Types.ObjectId;
   collaborators: mongoose.Schema.Types.ObjectId[];
-  reactions: mongoose.Schema.Types.ObjectId[];
+  reactions: {
+    emoji: string;
+    reactedToBy: [mongoose.Schema.Types.ObjectId];
+  }[];
   replies: mongoose.Schema.Types.ObjectId[];
   isBookmarked: boolean;
   isSelf: boolean;
@@ -43,12 +46,13 @@ const messageSchema = new mongoose.Schema<MessageSchemaType>(
     ],
     reactions: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        emoji: {
-          symbol: String,
-          name: String,
-        },
-        ref: "User",
+        emoji: String,
+        reactedToBy: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+          },
+        ],
       },
     ],
     replies: [

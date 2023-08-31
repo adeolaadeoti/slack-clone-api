@@ -120,14 +120,15 @@ io.on("connection", (socket) => {
       try {
         if (channelId) {
           socket.join(channelId);
-          io.to(channelId).emit("message", { message, organisation });
-          await Message.create({
+          let newMessage = await Message.create({
             organisation,
             sender: message.sender,
             content: message.content,
             channel: channelId,
             hasRead: false,
           });
+          newMessage = await newMessage.populate("sender");
+          io.to(channelId).emit("message", { newMessage, organisation });
           const updatedChannel = await Channels.findByIdAndUpdate(
             channelId,
             { hasNotOpen },
@@ -143,12 +144,7 @@ io.on("connection", (socket) => {
           });
         } else if (conversationId) {
           socket.join(conversationId);
-          io.to(conversationId).emit("message", {
-            collaborators,
-            organisation,
-            message,
-          });
-          await Message.create({
+          let newMessage = await Message.create({
             organisation,
             sender: message.sender,
             content: message.content,
@@ -156,6 +152,13 @@ io.on("connection", (socket) => {
             collaborators,
             isSelf,
             hasRead: false,
+          });
+          newMessage = await newMessage.populate("sender");
+
+          io.to(conversationId).emit("message", {
+            collaborators,
+            organisation,
+            newMessage,
           });
           const updatedConversation = await Conversations.findByIdAndUpdate(
             conversationId,
@@ -184,6 +187,56 @@ io.on("connection", (socket) => {
       io.emit("message-view", messageId);
     } else {
       console.log("message not found");
+    }
+  });
+
+  socket.on("reaction", async ({ emoji, id, userId }) => {
+    // 1. Message.findbyid(id)
+    const message = await Message.findById(id);
+    // 2. check if emoji already exists in Message.reactions array
+    if (message.reactions.some((r) => r.emoji === emoji)) {
+      // 3. if it does, check if userId exists in reactedToBy array
+      if (
+        message.reactions.some(
+          (r) =>
+            r.emoji === emoji &&
+            r.reactedToBy.some((v) => v.toString() === userId)
+        )
+      ) {
+        // Find the reaction that matches the emoji and remove userId from its reactedToBy array
+        const reactionToUpdate: any = message.reactions.find(
+          (r) => r.emoji === emoji
+        );
+        if (reactionToUpdate) {
+          reactionToUpdate.reactedToBy = reactionToUpdate.reactedToBy.filter(
+            (v) => v.toString() !== userId
+          );
+
+          // If reactedToBy array is empty after removing userId, remove the reaction object
+          if (reactionToUpdate.reactedToBy.length === 0) {
+            message.reactions = message.reactions.filter(
+              (r) => r !== reactionToUpdate
+            );
+          }
+          await message.populate("reactions.reactedToBy");
+          await message.save();
+        }
+      } else {
+        // Find the reaction that matches the emoji and push userId to its reactedToBy array
+        const reactionToUpdate = message.reactions.find(
+          (r) => r.emoji === emoji
+        );
+        if (reactionToUpdate) {
+          reactionToUpdate.reactedToBy.push(userId);
+          await message.populate("reactions.reactedToBy");
+          await message.save();
+        }
+      }
+    } else {
+      // 4. if it doesn't exists, create a new reaction like this {emoji, reactedToBy: [userId]}
+      message.reactions.push({ emoji, reactedToBy: [userId] });
+      await message.populate("reactions.reactedToBy");
+      await message.save();
     }
   });
 });

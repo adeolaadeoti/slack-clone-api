@@ -21,7 +21,9 @@ export async function getMessages(
       const channel = await Message.find({
         channel: channelId,
         organisation,
-      }).populate("sender");
+      })
+        .populate("sender")
+        .populate("reactions.reactedToBy");
       successResponse(res, channel);
     } else if (conversationId) {
       let conversation;
@@ -36,7 +38,9 @@ export async function getMessages(
         conversation = await Message.find({
           organisation,
           conversation: conversationId,
-        }).populate("sender");
+        })
+          .populate("sender")
+          .populate("reactions.reactedToBy");
       }
       successResponse(res, conversation);
     } else {
