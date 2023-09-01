@@ -1,34 +1,45 @@
 import mongoose from "mongoose";
 
 interface ThreadSchemaType {
-  user: mongoose.Schema.Types.ObjectId;
-  channel: mongoose.Schema.Types.ObjectId;
-  members: mongoose.Schema.Types.ObjectId[];
-  conversation: mongoose.Schema.Types.ObjectId[];
+  sender: mongoose.Schema.Types.ObjectId;
+  content: string;
+  messageId: mongoose.Schema.Types.ObjectId;
+  reactions: {
+    emoji: string;
+    reactedToBy: [mongoose.Schema.Types.ObjectId];
+  }[];
+  isBookmarked: boolean;
+  hasRead: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const threadSchema = new mongoose.Schema<ThreadSchemaType>(
   {
-    user: {
+    sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    channel: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Channel",
+    content: String,
+    reactions: [
+      {
+        emoji: String,
+        reactedToBy: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+          },
+        ],
+      },
+    ],
+    isBookmarked: {
+      type: Boolean,
+      default: false,
     },
-    members: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    conversation: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Message",
-      },
-    ],
+    hasRead: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

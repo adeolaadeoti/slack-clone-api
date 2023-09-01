@@ -218,7 +218,8 @@ io.on("connection", (socket) => {
               (r) => r !== reactionToUpdate
             );
           }
-          await message.populate("reactions.reactedToBy");
+          await message.populate(["reactions.reactedToBy", "sender"]);
+          socket.emit("message-updated", { id, message });
           await message.save();
         }
       } else {
@@ -228,14 +229,16 @@ io.on("connection", (socket) => {
         );
         if (reactionToUpdate) {
           reactionToUpdate.reactedToBy.push(userId);
-          await message.populate("reactions.reactedToBy");
+          await message.populate(["reactions.reactedToBy", "sender"]);
+          socket.emit("message-updated", { id, message });
           await message.save();
         }
       }
     } else {
       // 4. if it doesn't exists, create a new reaction like this {emoji, reactedToBy: [userId]}
       message.reactions.push({ emoji, reactedToBy: [userId] });
-      await message.populate("reactions.reactedToBy");
+      await message.populate(["reactions.reactedToBy", "sender"]);
+      socket.emit("message-updated", { id, message });
       await message.save();
     }
   });

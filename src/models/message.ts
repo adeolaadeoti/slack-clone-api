@@ -11,7 +11,8 @@ interface MessageSchemaType {
     emoji: string;
     reactedToBy: [mongoose.Schema.Types.ObjectId];
   }[];
-  replies: mongoose.Schema.Types.ObjectId[];
+  threadReplies: mongoose.Schema.Types.ObjectId[];
+  threadLastReplyDate: Date;
   isBookmarked: boolean;
   isSelf: boolean;
   hasRead: boolean;
@@ -55,12 +56,13 @@ const messageSchema = new mongoose.Schema<MessageSchemaType>(
         ],
       },
     ],
-    replies: [
+    threadReplies: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Message",
+        ref: "User",
       },
     ],
+    threadLastReplyDate: Date,
     isBookmarked: {
       type: Boolean,
       default: false,

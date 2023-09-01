@@ -50,3 +50,30 @@ export async function getMessages(
     next(error);
   }
 }
+
+// @desc    get message
+// @route   POST /api/v1/message
+// @access  Private
+export async function getMessage(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const id = req.params.id;
+
+    if (id) {
+      const message = await Message.findById(id).populate([
+        "sender",
+        "threadReplies",
+      ]);
+      successResponse(res, message);
+    } else {
+      res.status(400).json({
+        name: "message not found",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+}
