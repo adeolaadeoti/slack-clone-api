@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 interface ThreadSchemaType {
   sender: mongoose.Schema.Types.ObjectId;
   content: string;
-  messageId: mongoose.Schema.Types.ObjectId;
+  message: mongoose.Schema.Types.ObjectId;
   reactions: {
     emoji: string;
     reactedToBy: [mongoose.Schema.Types.ObjectId];
@@ -21,6 +21,7 @@ const threadSchema = new mongoose.Schema<ThreadSchemaType>(
       ref: "User",
     },
     content: String,
+    message: mongoose.Schema.Types.ObjectId,
     reactions: [
       {
         emoji: String,

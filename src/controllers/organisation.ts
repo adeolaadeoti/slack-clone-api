@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Organisation from "../models/organisation";
 import successResponse from "../helpers/successResponse";
 import Channel from "../models/channel";
-import Conversations from "../models/conversations";
+import Conversations from "../models/conversation";
 
 // @desc    get organisation
 // @route   GET /api/v1/organisation/:id

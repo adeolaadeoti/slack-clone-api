@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Organisation from "../models/organisation";
-import Conversation from "../models/conversations";
+import Conversation from "../models/conversation";
 import successResponse from "../helpers/successResponse";
 import Channel from "../models/channel";
 import User from "../models/user";

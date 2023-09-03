@@ -21,9 +21,7 @@ export async function getMessages(
       const channel = await Message.find({
         channel: channelId,
         organisation,
-      })
-        .populate("sender")
-        .populate("reactions.reactedToBy");
+      }).populate(["sender", "reactions.reactedToBy", "threadReplies"]);
       successResponse(res, channel);
     } else if (conversationId) {
       let conversation;
@@ -38,9 +36,7 @@ export async function getMessages(
         conversation = await Message.find({
           organisation,
           conversation: conversationId,
-        })
-          .populate("sender")
-          .populate("reactions.reactedToBy");
+        }).populate(["sender", "reactions.reactedToBy", "threadReplies"]);
       }
       successResponse(res, conversation);
     } else {
@@ -66,6 +62,7 @@ export async function getMessage(
       const message = await Message.findById(id).populate([
         "sender",
         "threadReplies",
+        "reactions.reactedToBy",
       ]);
       successResponse(res, message);
     } else {

@@ -11,17 +11,19 @@ import hpp from "hpp";
 import cors from "cors";
 import channel from "./routes/channel";
 import message from "./routes/message";
+import thread from "./routes/thread";
 import teammates from "./routes/teammates";
 import organisation from "./routes/organisation";
 import errorResponse from "./middleware/errorResponse";
 import Message from "../src/models/message";
 // import User from "../src/models/user";
 import Channels from "../src/models/channel";
-import Conversations from "../src/models/conversations";
+import Conversations from "./models/conversation";
 import conversations from "./routes/conversations";
 import { Server } from "socket.io";
 import http from "http";
 import updateUserStatus from "./helpers/updateUserStatus";
+import Thread from "./models/thread";
 
 dotenv.config();
 
@@ -105,6 +107,38 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("thread-message", async ({ userId, messageId, message }) => {
+    try {
+      socket.join(messageId);
+      let newMessage = await Thread.create({
+        sender: message.sender,
+        content: message.content,
+        message: messageId,
+        hasRead: false,
+      });
+      newMessage = await newMessage.populate("sender");
+      io.to(messageId).emit("thread-message", { newMessage });
+      const updatedMessage = await Message.findByIdAndUpdate(
+        messageId,
+        {
+          threadLastReplyDate: newMessage.createdAt,
+          $addToSet: { threadReplies: userId },
+          $inc: { threadRepliesCount: 1 },
+        },
+        { new: true }
+      ).populate(["threadReplies", "sender", "reactions.reactedToBy"]);
+
+      io.to(messageId).emit("message-updated", {
+        id: messageId,
+        message: updatedMessage,
+      });
+
+      // socket.emit("message-updated", { messageId, message: updatedMessage });
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
   socket.on(
     "message",
     async ({
@@ -139,7 +173,7 @@ io.on("connection", (socket) => {
             channelName,
             channelId,
             collaborators,
-            message,
+            newMessage,
             organisation,
           });
         } else if (conversationId) {
@@ -169,7 +203,7 @@ io.on("connection", (socket) => {
           socket.broadcast.emit("notification", {
             collaborators,
             organisation,
-            message,
+            newMessage,
             conversationId,
           });
         }
@@ -248,6 +282,7 @@ io.on("connection", (socket) => {
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/channel", channel);
 app.use("/api/v1/messages", message);
+app.use("/api/v1/threads", thread);
 app.use("/api/v1/teammates", teammates);
 app.use("/api/v1/organisation", organisation);
 app.use("/api/v1/conversations", conversations);

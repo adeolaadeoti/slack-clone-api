@@ -1,4 +1,4 @@
-import Conversations from "../models/conversations";
+import Conversations from "../models/conversation";
 
 export default async function updateUserStatus(id, isOnline) {
   await Conversations.findOneAndUpdate(

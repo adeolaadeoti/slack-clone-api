@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import Conversations from "../models/conversations";
+import Conversations from "../models/conversation";
 import successResponse from "../helpers/successResponse";
 
 export async function getConversations(

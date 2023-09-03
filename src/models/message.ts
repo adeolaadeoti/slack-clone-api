@@ -12,6 +12,7 @@ interface MessageSchemaType {
     reactedToBy: [mongoose.Schema.Types.ObjectId];
   }[];
   threadReplies: mongoose.Schema.Types.ObjectId[];
+  threadRepliesCount: number;
   threadLastReplyDate: Date;
   isBookmarked: boolean;
   isSelf: boolean;
@@ -62,6 +63,7 @@ const messageSchema = new mongoose.Schema<MessageSchemaType>(
         ref: "User",
       },
     ],
+    threadRepliesCount: Number,
     threadLastReplyDate: Date,
     isBookmarked: {
       type: Boolean,
