@@ -31,7 +31,7 @@ export async function getMessages(
           organisation,
           conversation: conversationId,
           isSelf,
-        }).populate("sender");
+        }).populate(["sender", "reactions.reactedToBy", "threadReplies"]);
       } else {
         conversation = await Message.find({
           organisation,

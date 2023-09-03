@@ -224,9 +224,19 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("reaction", async ({ emoji, id, userId }) => {
+  socket.on("reaction", async ({ emoji, id, isThread, userId }) => {
     // 1. Message.findbyid(id)
-    const message = await Message.findById(id);
+    let message;
+    if (isThread) {
+      message = await Thread.findById(id);
+    } else {
+      message = await Message.findById(id);
+    }
+
+    if (!message) {
+      // Handle the case where the model with the given id is not found
+      return;
+    }
     // 2. check if emoji already exists in Message.reactions array
     if (message.reactions.some((r) => r.emoji === emoji)) {
       // 3. if it does, check if userId exists in reactedToBy array
@@ -252,8 +262,21 @@ io.on("connection", (socket) => {
               (r) => r !== reactionToUpdate
             );
           }
-          await message.populate(["reactions.reactedToBy", "sender"]);
-          socket.emit("message-updated", { id, message });
+          // await message.populate([
+          //   "reactions.reactedToBy",
+          //   "sender",
+          //   // "threadReplies",
+          // ]);
+          if (isThread) {
+            await message.populate(["reactions.reactedToBy", "sender"]);
+          } else {
+            await message.populate([
+              "reactions.reactedToBy",
+              "sender",
+              "threadReplies",
+            ]);
+          }
+          socket.emit("message-updated", { id, message, isThread });
           await message.save();
         }
       } else {
@@ -263,16 +286,45 @@ io.on("connection", (socket) => {
         );
         if (reactionToUpdate) {
           reactionToUpdate.reactedToBy.push(userId);
-          await message.populate(["reactions.reactedToBy", "sender"]);
-          socket.emit("message-updated", { id, message });
+          // await message.populate([
+          //   "reactions.reactedToBy",
+          //   "sender",
+          //   // isThread && "threadReplies",
+
+          //   // "threadReplies",
+          // ]);
+          if (isThread) {
+            await message.populate(["reactions.reactedToBy", "sender"]);
+          } else {
+            await message.populate([
+              "reactions.reactedToBy",
+              "sender",
+              "threadReplies",
+            ]);
+          }
+          socket.emit("message-updated", { id, message, isThread });
           await message.save();
         }
       }
     } else {
       // 4. if it doesn't exists, create a new reaction like this {emoji, reactedToBy: [userId]}
       message.reactions.push({ emoji, reactedToBy: [userId] });
-      await message.populate(["reactions.reactedToBy", "sender"]);
-      socket.emit("message-updated", { id, message });
+      // await message.populate([
+      //   "reactions.reactedToBy",
+      //   "sender",
+      //   // isThread && "threadReplies",
+      //   // "threadReplies",
+      // ]);
+      if (isThread) {
+        await message.populate(["reactions.reactedToBy", "sender"]);
+      } else {
+        await message.populate([
+          "reactions.reactedToBy",
+          "sender",
+          "threadReplies",
+        ]);
+      }
+      socket.emit("message-updated", { id, message, isThread });
       await message.save();
     }
   });
