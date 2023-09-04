@@ -71,4 +71,7 @@ const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
   }
 );
 
+// Define a compound index on the collaborators field
+conversationSchema.index({ collaborators: 1 });
+
 export default mongoose.model("Conversation", conversationSchema);

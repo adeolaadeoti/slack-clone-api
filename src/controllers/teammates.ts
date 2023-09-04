@@ -124,41 +124,55 @@ export async function createTeammates(
             }
 
             // vibe and inshallah
-            sendEmail(
-              email,
-              `${invitedBy.email} has invited you to work with them in Slack`,
-              joinTeammatesEmail(
-                invitedBy.username,
-                invitedBy.email,
-                organisation.name,
-                req.user.id,
-                organisation.joinLink,
-                organisation.url
-              )
-            );
+            // sendEmail(
+            //   email,
+            //   `${invitedBy.email} has invited you to work with them in Slack`,
+            //   joinTeammatesEmail(
+            //     invitedBy.username,
+            //     invitedBy.email,
+            //     organisation.name,
+            //     req.user.id,
+            //     organisation.joinLink,
+            //     organisation.url
+            //   )
+            // );
           } catch (error) {
             next(error);
-          }
-        }
-        // Create separate conversations for each unique pair of coWorkers
-        for (let i = 0; i < organisation.coWorkers.length; i++) {
-          for (let j = i; j < organisation.coWorkers.length; j++) {
-            await Conversation.create({
-              name: `${organisation.coWorkers[i].username}, ${organisation.coWorkers[j].username}`,
-              description: `This conversation is between ${organisation.coWorkers[i].username} and ${organisation.coWorkers[j].username}`,
-              organisation: organisationId,
-              isSelf:
-                organisation.coWorkers[i]._id === organisation.coWorkers[j]._id,
-              collaborators: [
-                organisation.coWorkers[i]._id,
-                organisation.coWorkers[j]._id,
-              ],
-            });
           }
         }
 
         if (!channelId) {
           successResponse(res, organisation);
+        }
+        // Create separate conversations for each unique pair of coWorkers
+        for (let i = 0; i < organisation.coWorkers.length; i++) {
+          for (let j = i; j < organisation.coWorkers.length; j++) {
+            // Check if a conversation with these collaborators already exists
+            const existingConversation = await Conversation.findOne({
+              collaborators: {
+                $all: [
+                  organisation.coWorkers[i]._id,
+                  organisation.coWorkers[j]._id,
+                ],
+              },
+            });
+
+            // If no conversation exists, create a new one
+            if (!existingConversation) {
+              await Conversation.create({
+                name: `${organisation.coWorkers[i].username}, ${organisation.coWorkers[j].username}`,
+                description: `This conversation is between ${organisation.coWorkers[i].username} and ${organisation.coWorkers[j].username}`,
+                organisation: organisationId,
+                isSelf:
+                  organisation.coWorkers[i]._id ===
+                  organisation.coWorkers[j]._id,
+                collaborators: [
+                  organisation.coWorkers[i]._id,
+                  organisation.coWorkers[j]._id,
+                ],
+              });
+            }
+          }
         }
       }
     }
