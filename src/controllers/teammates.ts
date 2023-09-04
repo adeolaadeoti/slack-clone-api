@@ -16,38 +16,38 @@ export async function createTeammates(
   next: NextFunction
 ) {
   try {
-    const { emails, channelId, organisationId, userId } = req.body;
+    const { emails, channelId, organisationId, userIds } = req.body;
     const channelExist = await Channel.findById(channelId);
     let organisation: any;
 
     const invitedBy = await User.findById(req.user.id);
 
     // add existed teammates to channel
-    if (userId?.length > 0 && channelExist) {
+    if (userIds?.length > 0 && channelExist) {
       let channel: any;
 
-      for (const id of userId) {
+      for (const id of userIds) {
         try {
           channel = await Channel.findOneAndUpdate(
             { _id: channelId },
-            { $push: { collaborators: id } },
+            { $addToSet: { collaborators: id } },
             { new: true }
           ).populate("collaborators");
 
-          const user = await User.findById(id);
+          // const user = await User.findById(id);
 
-          sendEmail(
-            user.email,
-            `${invitedBy.email} has invited you to work with them in Slack`,
-            joinTeammatesEmail(
-              invitedBy.username,
-              invitedBy.email,
-              organisation.name,
-              req.user.id,
-              organisation.joinLink,
-              organisation.url
-            )
-          );
+          // sendEmail(
+          //   user.email,
+          //   `${invitedBy.email} has invited you to work with them in Slack`,
+          //   joinTeammatesEmail(
+          //     invitedBy.username,
+          //     invitedBy.email,
+          //     organisation.name,
+          //     req.user.id,
+          //     organisation.joinLink,
+          //     organisation.url
+          //   )
+          // );
         } catch (error) {
           next(error);
         }
