@@ -70,6 +70,12 @@ app.use(hpp());
 // Enable CORS
 app.use(cors());
 
+// Store users' sockets by their user IDs
+const users = {};
+
+// Store the target user for each offerer
+const targetUsers = {};
+
 // Set up WebSocket connections
 io.on("connection", (socket) => {
   socket.on("user-join", async ({ id, isOnline }) => {
@@ -326,6 +332,59 @@ io.on("connection", (socket) => {
       }
       socket.emit("message-updated", { id, message, isThread });
       await message.save();
+    }
+  });
+
+  socket.on("join-room", ({ roomId, userId }) => {
+    // Join the specified room
+    socket.join(roomId);
+
+    // Store the user's socket by their user ID
+    users[userId] = socket;
+
+    // Broadcast the "join-room" event to notify other users in the room
+    socket.to(roomId).emit("join-room", { roomId, otherUserId: userId });
+
+    console.log(`User ${userId} joined room ${roomId}`);
+  });
+
+  // Event handler for sending an SDP offer to another user
+  socket.on("offer", (offer, targetUserId) => {
+    // Find the target user's socket by their user ID
+    const targetSocket = users[targetUserId];
+
+    if (targetSocket) {
+      targetSocket.emit("offer", offer);
+
+      // Store the target user for this offerer
+      targetUsers[offer.senderUserId] = targetUserId;
+    }
+  });
+
+  // Event handler for sending an SDP answer to another user
+  socket.on("answer", (answer) => {
+    socket.broadcast.emit("answer", answer);
+  });
+
+  // Event handler for sending ICE candidates to the appropriate user (the answerer)
+  socket.on("ice-candidate", ({ candidate, senderUserId }) => {
+    // Find the target user's socket by their user ID
+    const targetUserId = targetUsers[senderUserId];
+    const targetSocket = users[targetUserId];
+
+    if (targetSocket) {
+      targetSocket.emit("ice-candidate", candidate);
+    }
+  });
+
+  // Handle user disconnection and remove them from the users object
+  socket.on("disconnect", () => {
+    const disconnectedUserId = Object.keys(users).find(
+      (userId) => users[userId] === socket
+    );
+    if (disconnectedUserId) {
+      delete users[disconnectedUserId];
+      console.log(`User ${disconnectedUserId} disconnected`);
     }
   });
 });

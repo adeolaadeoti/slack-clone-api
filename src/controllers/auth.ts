@@ -96,11 +96,12 @@ export const signin = async (
     const verificationToken = user.getVerificationCode();
     await user.save();
 
-    sendEmail(
-      email,
-      "Slack confirmation code",
-      verificationHtml(verificationToken)
-    );
+    // sendEmail(
+    //   email,
+    //   "Slack confirmation code",
+    //   verificationHtml(verificationToken)
+    // );
+    console.log(verificationToken);
 
     res.status(201).json({
       success: true,
