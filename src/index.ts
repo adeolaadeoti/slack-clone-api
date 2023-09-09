@@ -335,6 +335,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Event handler for joining a room
   socket.on("join-room", ({ roomId, userId }) => {
     // Join the specified room
     socket.join(roomId);
@@ -349,44 +350,45 @@ io.on("connection", (socket) => {
   });
 
   // Event handler for sending an SDP offer to another user
-  socket.on("offer", (offer, targetUserId) => {
+  socket.on("offer", ({ offer, targetUserId }) => {
     // Find the target user's socket by their user ID
     const targetSocket = users[targetUserId];
 
     if (targetSocket) {
-      targetSocket.emit("offer", offer);
+      targetSocket.emit("offer", { offer, senderUserId: targetUserId });
 
       // Store the target user for this offerer
-      targetUsers[offer.senderUserId] = targetUserId;
+      targetUsers[targetUserId] = targetUserId;
     }
   });
 
   // Event handler for sending an SDP answer to another user
-  socket.on("answer", (answer) => {
-    socket.broadcast.emit("answer", answer);
+  socket.on("answer", ({ answer, senderUserId }) => {
+    // console.log(answer);
+    socket.broadcast.emit("answer", { answer, senderUserId });
   });
 
   // Event handler for sending ICE candidates to the appropriate user (the answerer)
   socket.on("ice-candidate", ({ candidate, senderUserId }) => {
     // Find the target user's socket by their user ID
-    const targetUserId = targetUsers[senderUserId];
-    const targetSocket = users[targetUserId];
+    // const targetUserId = targetUsers[senderUserId];
+    const targetSocket = users[senderUserId];
 
     if (targetSocket) {
-      targetSocket.emit("ice-candidate", candidate);
+      targetSocket.emit("ice-candidate", candidate, senderUserId);
     }
   });
 
-  // Handle user disconnection and remove them from the users object
-  socket.on("disconnect", () => {
-    const disconnectedUserId = Object.keys(users).find(
-      (userId) => users[userId] === socket
-    );
-    if (disconnectedUserId) {
-      delete users[disconnectedUserId];
-      console.log(`User ${disconnectedUserId} disconnected`);
-    }
-  });
+  // // Handle user disconnection and remove them from the users object
+  // socket.on("disconnect", () => {
+  //   const disconnectedUserId = Object.keys(users).find(
+  //     (userId) => users[userId] === socket
+  //   );
+  //   if (disconnectedUserId) {
+  //     delete users[disconnectedUserId];
+  //     console.log(`User ${disconnectedUserId} disconnected`);
+  //   }
+  // });
 });
 
 // Routes
