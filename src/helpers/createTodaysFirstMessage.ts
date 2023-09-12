@@ -6,25 +6,42 @@ function formatDate(date) {
   return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1); // Capitalize the first letter
 }
 
-export default async function createTodaysFirstMessage(
-  channelId: string,
-  organisation: string
-) {
+interface CreateTodaysFirstMessage {
+  channelId?: string;
+  conversationId?: string;
+  organisation: string;
+}
+
+export default async function createTodaysFirstMessage({
+  channelId,
+  conversationId,
+  organisation,
+}: CreateTodaysFirstMessage) {
   try {
     // Check if there are any messages for today in the channel
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    let existingMessages;
 
-    const existingMessages = await Message.find({
-      channel: channelId,
-      createdAt: { $gte: today },
-    });
+    if (channelId) {
+      existingMessages = await Message.find({
+        channel: channelId,
+        createdAt: { $gte: today },
+      });
+    } else if (conversationId) {
+      existingMessages = await Message.find({
+        conversation: conversationId,
+        createdAt: { $gte: today },
+      });
+    }
 
     if (existingMessages.length === 0) {
       await Message.create({
         organisation,
         content: formatDate(today),
-        channel: channelId,
+        ...(channelId
+          ? { channel: channelId }
+          : { conversation: conversationId }),
         hasRead: false,
         type: "date",
       });

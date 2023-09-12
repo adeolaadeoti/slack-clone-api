@@ -158,7 +158,7 @@ io.on("connection", (socket) => {
         if (channelId) {
           socket.join(channelId);
           // Check if there are any messages for today in the channel
-          await createTodaysFirstMessage(channelId, organisation);
+          await createTodaysFirstMessage({ channelId, organisation });
 
           let newMessage = await Message.create({
             organisation,
@@ -188,7 +188,7 @@ io.on("connection", (socket) => {
         } else if (conversationId) {
           socket.join(conversationId);
           // Check if there are any messages for today in the channel
-          await createTodaysFirstMessage(channelId, organisation);
+          await createTodaysFirstMessage({ conversationId, organisation });
           let newMessage = await Message.create({
             organisation,
             sender: message.sender,
