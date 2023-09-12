@@ -17,6 +17,7 @@ interface MessageSchemaType {
   isBookmarked: boolean;
   isSelf: boolean;
   hasRead: boolean;
+  type: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -77,6 +78,7 @@ const messageSchema = new mongoose.Schema<MessageSchemaType>(
       type: Boolean,
       default: false,
     },
+    type: String,
   },
   {
     timestamps: true,

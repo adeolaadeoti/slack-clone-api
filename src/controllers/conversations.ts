@@ -48,7 +48,8 @@ export async function getConversation(
     conversations.collaborators.splice(currentUserIndex, 1);
 
     //   // Create the name field based on the other collaborator's username
-    const name = (conversations.collaborators[0] as any)?.username;
+    const name =
+      (conversations.collaborators[0] as any)?.username || conversations.name;
 
     successResponse(res, {
       ...conversations.toObject(),

@@ -71,3 +71,31 @@ export async function getChannel(
     next(error);
   }
 }
+
+export async function updateChannel(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const id = req.params.id;
+    const channel = await Channel.findById(id);
+    if (!channel) {
+      return res.status(400).json({
+        name: "not found",
+      });
+    }
+
+    const updatedChannel = await Channel.findByIdAndUpdate(
+      id,
+      { $addToSet: { collaborators: req.body.userId } },
+      {
+        new: true,
+      }
+    );
+
+    successResponse(res, updatedChannel);
+  } catch (error) {
+    next(error);
+  }
+}

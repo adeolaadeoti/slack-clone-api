@@ -14,7 +14,6 @@ export async function getMessages(
     const channelId = req.query.channelId;
     const conversationId = req.query.conversation;
     const isSelf = req.query.isSelf;
-    // const collaborators = req.query.collaborators;
     const organisation = req.query.organisation;
 
     if (channelId) {

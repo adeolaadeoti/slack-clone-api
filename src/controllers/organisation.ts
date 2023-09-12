@@ -53,7 +53,7 @@ export async function getOrganisation(
         convo.collaborators.splice(currentUserIndex, 1);
 
         // Create the name field based on the other collaborator's username
-        const name = (convo.collaborators[0] as any)?.username;
+        const name = (convo.collaborators[0] as any)?.username || convo.name;
 
         return {
           ...convo.toObject(),

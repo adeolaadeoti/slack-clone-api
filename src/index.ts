@@ -16,14 +16,14 @@ import teammates from "./routes/teammates";
 import organisation from "./routes/organisation";
 import errorResponse from "./middleware/errorResponse";
 import Message from "../src/models/message";
-// import User from "../src/models/user";
 import Channels from "../src/models/channel";
 import Conversations from "./models/conversation";
 import conversations from "./routes/conversations";
 import { Server } from "socket.io";
 import http from "http";
-import updateUserStatus from "./helpers/updateUserStatus";
+import updateConversationStatus from "./helpers/updateConversationStatus";
 import Thread from "./models/thread";
+import createTodaysFirstMessage from "./helpers/createTodaysFirstMessage";
 
 dotenv.config();
 
@@ -73,20 +73,17 @@ app.use(cors());
 // Store users' sockets by their user IDs
 const users = {};
 
-// Store the target user for each offerer
-const targetUsers = {};
-
 // Set up WebSocket connections
 io.on("connection", (socket) => {
   socket.on("user-join", async ({ id, isOnline }) => {
     socket.join(id);
-    await updateUserStatus(id, isOnline);
+    await updateConversationStatus(id, isOnline);
     io.emit("user-join", { id, isOnline });
   });
 
   socket.on("user-leave", async ({ id, isOnline }) => {
     socket.leave(id);
-    await updateUserStatus(id, isOnline);
+    await updateConversationStatus(id, isOnline);
     io.emit("user-leave", { id, isOnline });
   });
 
@@ -160,6 +157,9 @@ io.on("connection", (socket) => {
       try {
         if (channelId) {
           socket.join(channelId);
+          // Check if there are any messages for today in the channel
+          await createTodaysFirstMessage(channelId, organisation);
+
           let newMessage = await Message.create({
             organisation,
             sender: message.sender,
@@ -167,13 +167,16 @@ io.on("connection", (socket) => {
             channel: channelId,
             hasRead: false,
           });
+
           newMessage = await newMessage.populate("sender");
           io.to(channelId).emit("message", { newMessage, organisation });
+
           const updatedChannel = await Channels.findByIdAndUpdate(
             channelId,
             { hasNotOpen },
             { new: true }
           );
+
           io.to(channelId).emit("channel-updated", updatedChannel);
           socket.broadcast.emit("notification", {
             channelName,
@@ -184,6 +187,8 @@ io.on("connection", (socket) => {
           });
         } else if (conversationId) {
           socket.join(conversationId);
+          // Check if there are any messages for today in the channel
+          await createTodaysFirstMessage(channelId, organisation);
           let newMessage = await Message.create({
             organisation,
             sender: message.sender,
@@ -334,15 +339,12 @@ io.on("connection", (socket) => {
       await message.save();
     }
   });
-
   // Event handler for joining a room
   socket.on("join-room", ({ roomId, userId }) => {
     // Join the specified room
     socket.join(roomId);
-
     // Store the user's socket by their user ID
     users[userId] = socket;
-
     // Broadcast the "join-room" event to notify other users in the room
     socket.to(roomId).emit("join-room", { roomId, otherUserId: userId });
 
@@ -353,42 +355,34 @@ io.on("connection", (socket) => {
   socket.on("offer", ({ offer, targetUserId }) => {
     // Find the target user's socket by their user ID
     const targetSocket = users[targetUserId];
-
     if (targetSocket) {
       targetSocket.emit("offer", { offer, senderUserId: targetUserId });
-
-      // Store the target user for this offerer
-      targetUsers[targetUserId] = targetUserId;
     }
   });
 
   // Event handler for sending an SDP answer to another user
   socket.on("answer", ({ answer, senderUserId }) => {
-    // console.log(answer);
     socket.broadcast.emit("answer", { answer, senderUserId });
   });
 
   // Event handler for sending ICE candidates to the appropriate user (the answerer)
   socket.on("ice-candidate", ({ candidate, senderUserId }) => {
     // Find the target user's socket by their user ID
-    // const targetUserId = targetUsers[senderUserId];
     const targetSocket = users[senderUserId];
-
     if (targetSocket) {
       targetSocket.emit("ice-candidate", candidate, senderUserId);
     }
   });
 
-  // // Handle user disconnection and remove them from the users object
-  // socket.on("disconnect", () => {
-  //   const disconnectedUserId = Object.keys(users).find(
-  //     (userId) => users[userId] === socket
-  //   );
-  //   if (disconnectedUserId) {
-  //     delete users[disconnectedUserId];
-  //     console.log(`User ${disconnectedUserId} disconnected`);
-  //   }
-  // });
+  // Event handler for leaving a room
+  socket.on("room-leave", ({ roomId, userId }) => {
+    socket.leave(roomId);
+    // Remove the user's socket from the users object
+    delete users[userId];
+    // Broadcast the "room-leave" event to notify other users in the room
+    socket.to(roomId).emit("room-leave", { roomId, leftUserId: userId });
+    console.log(`User ${userId} left room ${roomId}`);
+  });
 });
 
 // Routes

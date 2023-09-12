@@ -144,9 +144,10 @@ export async function createTeammates(
         if (!channelId) {
           successResponse(res, organisation);
         }
+
         // Create separate conversations for each unique pair of coWorkers
         for (let i = 0; i < organisation.coWorkers.length; i++) {
-          for (let j = i; j < organisation.coWorkers.length; j++) {
+          for (let j = i + 1; j < organisation.coWorkers.length; j++) {
             // Check if a conversation with these collaborators already exists
             const existingConversation = await Conversation.findOne({
               collaborators: {
@@ -155,6 +156,7 @@ export async function createTeammates(
                   organisation.coWorkers[j]._id,
                 ],
               },
+              organisation: organisationId,
             });
 
             // If no conversation exists, create a new one
@@ -172,6 +174,28 @@ export async function createTeammates(
                 ],
               });
             }
+          }
+        }
+
+        // Create self-conversations for each coworker
+        for (let i = 0; i < organisation.coWorkers.length; i++) {
+          const selfConversationExists = await Conversation.findOne({
+            collaborators: {
+              $all: [organisation.coWorkers[i]._id],
+            },
+            organisation: organisationId,
+            isSelf: true,
+          });
+
+          // If no self-conversation exists, create one
+          if (!selfConversationExists) {
+            await Conversation.create({
+              name: `${organisation.coWorkers[i].username}`,
+              description: `This is a conversation with oneself (${organisation.coWorkers[i].username}).`,
+              organisation: organisationId,
+              isSelf: true,
+              collaborators: [organisation.coWorkers[i]._id],
+            });
           }
         }
       }

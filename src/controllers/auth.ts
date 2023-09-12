@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
-import sendEmail from "../helpers/sendEmail";
+// import sendEmail from "../helpers/sendEmail";
 import crypto from "crypto";
-import { verificationHtml } from "../html/confirmation-code-email";
+// import { verificationHtml } from "../html/confirmation-code-email";
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register
@@ -41,12 +41,12 @@ export const register = async (
   try {
     const verificationToken = user.getVerificationCode();
     await user.save();
-
-    sendEmail(
-      email,
-      "Slack confirmation code",
-      verificationHtml(verificationToken)
-    );
+    console.log(verificationToken);
+    // sendEmail(
+    //   email,
+    //   "Slack confirmation code",
+    //   verificationHtml(verificationToken)
+    // );
 
     res.status(201).json({
       success: true,
