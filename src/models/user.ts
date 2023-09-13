@@ -12,6 +12,7 @@ interface UserSchemaType {
   isOnline: boolean;
   loginVerificationCode: string;
   loginVerificationCodeExpires: Date;
+  googleId: string;
   getSignedJwtToken: () => string;
   getVerificationCode: () => string;
 }
@@ -30,6 +31,7 @@ const userSchema = new mongoose.Schema<UserSchemaType>(
       unique: true,
       match: [/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/, "Please enter a valid email"],
     },
+    googleId: String,
     isOnline: Boolean,
     role: String,
     phone: String,

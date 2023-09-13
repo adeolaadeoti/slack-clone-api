@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
+dotenv.config();
 import auth from "./routes/auth";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
@@ -24,8 +25,8 @@ import http from "http";
 import updateConversationStatus from "./helpers/updateConversationStatus";
 import Thread from "./models/thread";
 import createTodaysFirstMessage from "./helpers/createTodaysFirstMessage";
-
-dotenv.config();
+import passport from "passport";
+import cookieSession from "cookie-session";
 
 const app = express();
 const server = http.createServer(app);
@@ -40,6 +41,17 @@ const io = new Server(server, {
 connectDB();
 
 // Express configuration
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["cyberwolve"],
+    maxAge: 24 * 60 * 60 * 100,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

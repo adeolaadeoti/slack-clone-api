@@ -3,6 +3,46 @@ import User from "../models/user";
 // import sendEmail from "../helpers/sendEmail";
 import crypto from "crypto";
 // import { verificationHtml } from "../html/confirmation-code-email";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+
+// Configure Google OAuth strategy
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:3000/api/v1/auth/google/callback",
+      scope: ["profile", "email"],
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        // Find or create a user based on the Google profile information
+        let user = await User.findOne({ googleId: profile.id });
+        if (!user) {
+          user = new User({
+            googleId: profile.id,
+            username: profile.displayName,
+            email: profile.emails[0].value,
+          });
+          await user.save();
+        }
+
+        return done(null, user);
+      } catch (error) {
+        return done(error, false);
+      }
+    }
+  )
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register
@@ -60,6 +100,12 @@ export const register = async (
     await user.save({ validateBeforeSave: false });
     next(err);
   }
+  // Redirect to Google OAuth for authentication
+  // passport.authenticate("google", { scope: ["profile", "email"] })(
+  //   req,
+  //   res,
+  //   next
+  // );
 };
 
 // @desc    Signin user
@@ -115,6 +161,13 @@ export const signin = async (
     await user.save({ validateBeforeSave: false });
     next(err);
   }
+
+  // Redirect to Google OAuth for authentication
+  // passport.authenticate("google", { scope: ["profile", "email"] })(
+  //   req,
+  //   res,
+  //   next
+  // );
 };
 
 // @desc    Verify user
@@ -169,4 +222,41 @@ export const verify = async (
   } catch (err) {
     next(err);
   }
+};
+
+// @desc    Google OAuth Callback
+// @route   GET /auth/google/callback
+// @access  Public
+export const googleCallback = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  passport.authenticate("google", (err, user) => {
+    if (err) {
+      // Handle error
+      return next(err);
+    }
+
+    if (!user) {
+      // Handle user not found
+      return res.status(401).json({ message: "Authentication failed" });
+    }
+
+    const token = user.getSignedJwtToken();
+
+    res.redirect(
+      `http://localhost:3001?token=${token}&email=${user.email}&username=${user.username}`
+    );
+
+    // Generate a JWT token for the user and send it back as a response
+    // res.json({
+    //   success: true,
+    //   data: {
+    //     username: user.username,
+    //     email: user.email,
+    //     token: user.getSignedJwtToken(),
+    //   },
+    // });
+  })(req, res, next);
 };

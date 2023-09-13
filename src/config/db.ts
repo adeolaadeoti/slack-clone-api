@@ -14,6 +14,8 @@ export default async function connectDB() {
   }
 }
 
+
+
 // async function runOrganisationMigration() {
 //   try {
 //     const organisations = await Organisation.find({}).populate("coWorkers");
