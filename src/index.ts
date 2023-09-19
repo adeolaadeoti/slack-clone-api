@@ -87,7 +87,6 @@ const users = {};
 
 // Set up WebSocket connections
 io.on("connection", (socket) => {
-  console.log("connecting socket");
   socket.on("user-join", async ({ id, isOnline }) => {
     socket.join(id);
     await updateConversationStatus(id, isOnline);
