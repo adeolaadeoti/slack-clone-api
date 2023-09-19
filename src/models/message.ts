@@ -1,50 +1,50 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
 
 interface MessageSchemaType {
-  sender: mongoose.Schema.Types.ObjectId;
-  content: string;
-  channel: mongoose.Schema.Types.ObjectId;
-  organisation: mongoose.Schema.Types.ObjectId;
-  conversation: mongoose.Schema.Types.ObjectId;
-  collaborators: mongoose.Schema.Types.ObjectId[];
+  sender: mongoose.Schema.Types.ObjectId
+  content: string
+  channel: mongoose.Schema.Types.ObjectId
+  organisation: mongoose.Schema.Types.ObjectId
+  conversation: mongoose.Schema.Types.ObjectId
+  collaborators: mongoose.Schema.Types.ObjectId[]
   reactions: {
-    emoji: string;
-    reactedToBy: [mongoose.Schema.Types.ObjectId];
-  }[];
-  threadReplies: mongoose.Schema.Types.ObjectId[];
-  threadRepliesCount: number;
-  threadLastReplyDate: Date;
-  isBookmarked: boolean;
-  isSelf: boolean;
-  hasRead: boolean;
-  type: string;
-  createdAt: Date;
-  updatedAt: Date;
+    emoji: string
+    reactedToBy: [mongoose.Schema.Types.ObjectId]
+  }[]
+  threadReplies: mongoose.Schema.Types.ObjectId[]
+  threadRepliesCount: number
+  threadLastReplyDate: Date
+  isBookmarked: boolean
+  isSelf: boolean
+  hasRead: boolean
+  type: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 const messageSchema = new mongoose.Schema<MessageSchemaType>(
   {
     sender: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     content: String,
     channel: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Channel",
+      ref: 'Channel',
     },
     organisation: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Organisation",
+      ref: 'Organisation',
     },
     conversation: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Conversation",
+      ref: 'Conversation',
     },
     collaborators: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
     reactions: [
@@ -53,7 +53,7 @@ const messageSchema = new mongoose.Schema<MessageSchemaType>(
         reactedToBy: [
           {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: 'User',
           },
         ],
       },
@@ -61,7 +61,7 @@ const messageSchema = new mongoose.Schema<MessageSchemaType>(
     threadReplies: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
     threadRepliesCount: Number,
@@ -84,6 +84,6 @@ const messageSchema = new mongoose.Schema<MessageSchemaType>(
     timestamps: true,
     versionKey: false,
   }
-);
+)
 
-export default mongoose.model("Message", messageSchema);
+export default mongoose.model('Message', messageSchema)

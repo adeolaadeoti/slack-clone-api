@@ -488,5 +488,5 @@ export function joinTeammatesEmail(
       </tr>
       </table>
       <![endif]--></td></tr></tbody></table>
-      </body></html>`;
+      </body></html>`
 }

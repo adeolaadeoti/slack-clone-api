@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer'
 
 export default async function sendEmail(
   to: string,
@@ -8,12 +8,12 @@ export default async function sendEmail(
 ) {
   try {
     const transporter = nodemailer.createTransport({
-      service: "hotmail",
+      service: 'hotmail',
       auth: {
         user: process.env.SMTP_USERNAME,
         pass: process.env.SMTP_PASSWORD,
       },
-    });
+    })
 
     await transporter.sendMail({
       from: process.env.SMTP_USERNAME,
@@ -21,8 +21,8 @@ export default async function sendEmail(
       subject,
       html,
       text,
-    });
+    })
   } catch (error) {
-    console.log(error);
+    console.log(error)
   }
 }

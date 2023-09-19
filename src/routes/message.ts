@@ -1,10 +1,10 @@
-import express from "express";
-import { protect } from "../middleware/protect";
-import { getMessage, getMessages } from "../controllers/message";
+import express from 'express'
+import { protect } from '../middleware/protect'
+import { getMessage, getMessages } from '../controllers/message'
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", protect, getMessages);
-router.get("/:id", protect, getMessage);
+router.get('/', protect, getMessages)
+router.get('/:id', protect, getMessage)
 
-export default router;
+export default router

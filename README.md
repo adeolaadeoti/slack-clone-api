@@ -1,4 +1,4 @@
-# Slack Clone API REPO
+# Slack Clone Api Repository
 - Client repository https://github.com/adeolaadeoti/slack-clone-client
 
 ## Table of Contents
@@ -65,15 +65,15 @@ Slack clone is a powerful team collaboration platform that allows you to communi
    ```plaintext
    MONGODB_URI=
    JWT_SECRET=
-   JWT_EXPIRE=
+   JWT_EXPIRE=30d
    SMTP_USERNAME=
    SMTP_PASSWORD=
-   MONGODB_DB_NAME=
-   NODE_ENV=
+   MONGODB_DB_NAME=slack-clone-dev
+   NODE_ENV=development
    GOOGLE_CLIENT_ID=
    GOOGLE_CLIENT_SECRET=
-   CLIENT_URL=
-   API_URL=
+   CLIENT_URL=http://localhost:3000
+   API_URL=http://localhost:8080/api/v1
    ```
 
 5. Start the application:

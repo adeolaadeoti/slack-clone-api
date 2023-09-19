@@ -1,35 +1,35 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
 // import { v4 as uuidv4 } from "uuid";
 
-interface ChannelSchemaType {
-  name: string;
-  collaborators: mongoose.Schema.Types.ObjectId[];
-  title: string;
-  description: string;
-  organisation: mongoose.Schema.Types.ObjectId;
-  hasNotOpen: mongoose.Schema.Types.ObjectId[];
-  isChannel: boolean;
+export interface ChannelSchemaType {
+  name: string
+  collaborators: mongoose.Schema.Types.ObjectId[]
+  title: string
+  description: string
+  organisation: mongoose.Schema.Types.ObjectId
+  hasNotOpen: mongoose.Schema.Types.ObjectId[]
+  isChannel: boolean
   // conversations: mongoose.Schema.Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date
+  updatedAt: Date
 }
 
 const channelSchema = new mongoose.Schema<ChannelSchemaType>(
   {
     name: {
       type: String,
-      required: [true, "Please enter your channel name"],
+      required: [true, 'Please enter your channel name'],
     },
     collaborators: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
     title: {
       type: String,
       default() {
-        return `This is the very first begining of the ${this.name} channel`;
+        return `This is the very first begining of the ${this.name} channel`
       },
     },
     description: {
@@ -37,12 +37,12 @@ const channelSchema = new mongoose.Schema<ChannelSchemaType>(
     },
     organisation: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Organisation",
+      ref: 'Organisation',
     },
     hasNotOpen: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
     isChannel: {
@@ -60,6 +60,6 @@ const channelSchema = new mongoose.Schema<ChannelSchemaType>(
     timestamps: true,
     versionKey: false,
   }
-);
+)
 
-export default mongoose.model("Channel", channelSchema);
+export default mongoose.model('Channel', channelSchema)

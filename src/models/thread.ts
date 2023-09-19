@@ -1,24 +1,24 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
 
 interface ThreadSchemaType {
-  sender: mongoose.Schema.Types.ObjectId;
-  content: string;
-  message: mongoose.Schema.Types.ObjectId;
+  sender: mongoose.Schema.Types.ObjectId
+  content: string
+  message: mongoose.Schema.Types.ObjectId
   reactions: {
-    emoji: string;
-    reactedToBy: [mongoose.Schema.Types.ObjectId];
-  }[];
-  isBookmarked: boolean;
-  hasRead: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+    emoji: string
+    reactedToBy: [mongoose.Schema.Types.ObjectId]
+  }[]
+  isBookmarked: boolean
+  hasRead: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 const threadSchema = new mongoose.Schema<ThreadSchemaType>(
   {
     sender: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     content: String,
     message: mongoose.Schema.Types.ObjectId,
@@ -28,7 +28,7 @@ const threadSchema = new mongoose.Schema<ThreadSchemaType>(
         reactedToBy: [
           {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: 'User',
           },
         ],
       },
@@ -46,6 +46,6 @@ const threadSchema = new mongoose.Schema<ThreadSchemaType>(
     timestamps: true,
     versionKey: false,
   }
-);
+)
 
-export default mongoose.model("Thread", threadSchema);
+export default mongoose.model('Thread', threadSchema)

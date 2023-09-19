@@ -1,18 +1,18 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
+import { UserSchemaType } from './user'
 
-interface ConversationSchemaType {
-  name: string;
-  collaborators: mongoose.Schema.Types.ObjectId[];
-  title: string;
-  description: string;
-  isSelf: boolean;
-  organisation: mongoose.Schema.Types.ObjectId;
-  createdBy: mongoose.Schema.Types.ObjectId;
-  hasNotOpen: mongoose.Schema.Types.ObjectId[];
-  isConversation: boolean;
-  isOnline: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+export interface ConversationSchemaType {
+  name: string
+  collaborators: mongoose.Schema.Types.ObjectId[] & UserSchemaType[]
+  description: string
+  isSelf: boolean
+  organisation: mongoose.Schema.Types.ObjectId
+  createdBy: mongoose.Schema.Types.ObjectId
+  hasNotOpen: mongoose.Schema.Types.ObjectId[]
+  isConversation: boolean
+  isOnline: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
@@ -21,21 +21,21 @@ const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
       type: String,
       default() {
         if (this.createdBy) {
-          return this.createdBy.username;
+          return this.createdBy.username
         }
-        return "";
+        return ''
       },
     },
     collaborators: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
     description: {
       type: String,
       default() {
-        return `This conversation is just between ${this.name} and you`;
+        return `This conversation is just between ${this.name} and you`
       },
     },
     isSelf: {
@@ -48,11 +48,11 @@ const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
     },
     organisation: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Organisation",
+      ref: 'Organisation',
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     isOnline: {
       type: Boolean,
@@ -61,7 +61,7 @@ const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
     hasNotOpen: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
   },
@@ -69,9 +69,9 @@ const conversationSchema = new mongoose.Schema<ConversationSchemaType>(
     timestamps: true,
     versionKey: false,
   }
-);
+)
 
 // Define a compound index on the collaborators field
-conversationSchema.index({ collaborators: 1 });
+conversationSchema.index({ collaborators: 1 })
 
-export default mongoose.model("Conversation", conversationSchema);
+export default mongoose.model('Conversation', conversationSchema)
