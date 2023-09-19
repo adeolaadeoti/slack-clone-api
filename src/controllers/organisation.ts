@@ -152,7 +152,7 @@ export async function getWorkspaces(
 
     successResponse(res, workspacesWithChannels);
 
-    successResponse(res, workspaces);
+    // successResponse(res, workspaces);
   } catch (error) {
     next(error);
   }

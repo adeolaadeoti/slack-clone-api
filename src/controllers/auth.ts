@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
-// import sendEmail from "../helpers/sendEmail";
+import sendEmail from "../helpers/sendEmail";
 import crypto from "crypto";
-// import { verificationHtml } from "../html/confirmation-code-email";
+import { verificationHtml } from "../html/confirmation-code-email";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
@@ -12,7 +12,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/api/v1/auth/google/callback",
+      callbackURL: `${process.env.API_URL}/auth/google/callback`,
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -82,11 +82,11 @@ export const register = async (
     const verificationToken = user.getVerificationCode();
     await user.save();
     console.log(verificationToken);
-    // sendEmail(
-    //   email,
-    //   "Slack confirmation code",
-    //   verificationHtml(verificationToken)
-    // );
+    sendEmail(
+      email,
+      "Slack confirmation code",
+      verificationHtml(verificationToken)
+    );
 
     res.status(201).json({
       success: true,
@@ -100,12 +100,6 @@ export const register = async (
     await user.save({ validateBeforeSave: false });
     next(err);
   }
-  // Redirect to Google OAuth for authentication
-  // passport.authenticate("google", { scope: ["profile", "email"] })(
-  //   req,
-  //   res,
-  //   next
-  // );
 };
 
 // @desc    Signin user
@@ -142,11 +136,12 @@ export const signin = async (
     const verificationToken = user.getVerificationCode();
     await user.save();
 
-    // sendEmail(
-    //   email,
-    //   "Slack confirmation code",
-    //   verificationHtml(verificationToken)
-    // );
+    sendEmail(
+      email,
+      "Slack confirmation code",
+      verificationHtml(verificationToken)
+      // verificationToken
+    );
     console.log(verificationToken);
 
     res.status(201).json({
@@ -246,7 +241,7 @@ export const googleCallback = async (
     const token = user.getSignedJwtToken();
 
     res.redirect(
-      `http://localhost:3001?token=${token}&email=${user.email}&username=${user.username}`
+      `${process.env.CLIENT_URL}?token=${token}&email=${user.email}&username=${user.username}`
     );
 
     // Generate a JWT token for the user and send it back as a response

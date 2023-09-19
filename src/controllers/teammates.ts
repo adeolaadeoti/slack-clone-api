@@ -34,20 +34,20 @@ export async function createTeammates(
             { new: true }
           ).populate("collaborators");
 
-          // const user = await User.findById(id);
+          const user = await User.findById(id);
 
-          // sendEmail(
-          //   user.email,
-          //   `${invitedBy.email} has invited you to work with them in Slack`,
-          //   joinTeammatesEmail(
-          //     invitedBy.username,
-          //     invitedBy.email,
-          //     organisation.name,
-          //     req.user.id,
-          //     organisation.joinLink,
-          //     organisation.url
-          //   )
-          // );
+          sendEmail(
+            user.email,
+            `${invitedBy.email} has invited you to work with them in Slack`,
+            joinTeammatesEmail(
+              invitedBy.username,
+              invitedBy.email,
+              organisation.name,
+              req.user.id,
+              organisation.joinLink,
+              organisation.url
+            )
+          );
         } catch (error) {
           next(error);
         }
@@ -124,18 +124,18 @@ export async function createTeammates(
             }
 
             // vibe and inshallah
-            // sendEmail(
-            //   email,
-            //   `${invitedBy.email} has invited you to work with them in Slack`,
-            //   joinTeammatesEmail(
-            //     invitedBy.username,
-            //     invitedBy.email,
-            //     organisation.name,
-            //     req.user.id,
-            //     organisation.joinLink,
-            //     organisation.url
-            //   )
-            // );
+            sendEmail(
+              email,
+              `${invitedBy.email} has invited you to work with them in Slack`,
+              joinTeammatesEmail(
+                invitedBy.username,
+                invitedBy.email,
+                organisation.name,
+                req.user.id,
+                organisation.joinLink,
+                organisation.url
+              )
+            );
           } catch (error) {
             next(error);
           }
