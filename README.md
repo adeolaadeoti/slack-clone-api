@@ -1,4 +1,5 @@
 # Slack Clone API REPO
+- Client repository https://github.com/adeolaadeoti/slack-clone-client
 
 ## Table of Contents
 
