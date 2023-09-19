@@ -33,7 +33,6 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL,
-    // origin: "http://localhost:3001",
     methods: ["GET", "POST"],
   },
 });
@@ -88,6 +87,7 @@ const users = {};
 
 // Set up WebSocket connections
 io.on("connection", (socket) => {
+  console.log("connecting socket");
   socket.on("user-join", async ({ id, isOnline }) => {
     socket.join(id);
     await updateConversationStatus(id, isOnline);
@@ -411,7 +411,7 @@ app.use("/api/v1/conversations", conversations);
 app.use(errorResponse);
 
 // Start the server
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
