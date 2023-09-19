@@ -1,12 +1,10 @@
-
-# Slack Clone API
+# Slack Clone API REPO
 
 ## Table of Contents
 
 - [Introduction](#introduction)
 - [Features](#features)
 - [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Usage](#usage)
   - [User Registration](#user-registration)
@@ -14,10 +12,6 @@
   - [Sending Messages](#sending-messages)
   - [Message Replies (Threads)](#message-replies-threads)
   - [Huddle with Other Users](#huddle-with-other-users)
-- [Advanced Usage](#advanced-usage)
-  - [Customizing Notifications](#customizing-notifications)
-  - [Integrating with External Tools](#integrating-with-external-tools)
-- [FAQ](#faq)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -25,7 +19,7 @@
 
 Slack clone is a powerful team collaboration platform that allows you to communicate and collaborate with your team members in real-time. Whether you're working remotely or in the same office, our application provides a seamless and efficient way to stay connected.
 
-![Screenshot](screenshot.png)
+![Screenshot](https://res.cloudinary.com/adeolaadeoti/image/upload/v1695161023/screenshot_jsd2mf.png)
 
 ## Features
 
@@ -43,32 +37,24 @@ Slack clone is a powerful team collaboration platform that allows you to communi
 
 ## Getting Started
 
-### Prerequisites
-
-Before you begin, ensure you have met the following requirements:
-
-- Node.js (version X.X.X)
-- MongoDB (version X.X.X)
-- Git (optional)
-
 ### Installation
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-repo/your-slack-like-app.git
+   git clone https://github.com/adeolaadeoti/slack-clone-api.git
    ```
 
 2. Change to the project directory:
 
    ```bash
-   cd your-slack-like-app
+   cd slack-clone-api
    ```
 
 3. Install dependencies:
 
    ```bash
-   npm install
+   yarn
    ```
 
 4. Set up environment variables:
@@ -76,18 +62,26 @@ Before you begin, ensure you have met the following requirements:
    Create a `.env` file in the root directory of the project and add the necessary environment variables, including your database connection details and any API keys.
 
    ```plaintext
-   DB_URI=mongodb://localhost:27017/your-database-name
-   API_KEY=your-api-key
-   # Add other environment variables here
+   MONGODB_URI=
+   JWT_SECRET=
+   JWT_EXPIRE=
+   SMTP_USERNAME=
+   SMTP_PASSWORD=
+   MONGODB_DB_NAME=
+   NODE_ENV=
+   GOOGLE_CLIENT_ID=
+   GOOGLE_CLIENT_SECRET=
+   CLIENT_URL=
+   API_URL=
    ```
 
 5. Start the application:
 
    ```bash
-   npm start
+   yarn start
    ```
 
-6. Access the application in your web browser at `http://localhost:3000`.
+6. Access the application at `http://localhost:8080`.
 
 ## Usage
 
@@ -141,44 +135,10 @@ Before you begin, ensure you have met the following requirements:
 
 2. Huddles provide a secure environment for group discussions with select team members.
 
-## Advanced Usage
-
-### Customizing Notifications
-
-You can customize notification settings for channels and direct messages. To do this:
-
-1. Click on the channel or user you want to customize notifications for.
-
-2. Click on the settings icon (usually represented as a gear or cog).
-
-3. Adjust the notification preferences according to your needs.
-
-### Integrating with External Tools
-
-Your Slack-Like Application Name supports integrations with external tools and services. To set up integrations:
-
-1. Navigate to the "Integrations" section in the application settings.
-
-2. Follow the instructions for integrating with specific tools (e.g., Google Calendar, GitHub).
-
-## FAQ
-
-**Q:** How can I reset my password?
-
-**A:** You can reset your password by clicking on the "Forgot Password" link on the login page. Follow the instructions sent to your registered email address.
-
-**Q:** Is my data secure?
-
-**A:** We take data security seriously. All communication is encrypted, and user data is stored securely. For more details, please refer to our [security documentation](security.md).
-
 ## Contributing
 
-We welcome contributions from the community. To contribute to the project, please follow our [contributing guidelines](CONTRIBUTING.md).
+We welcome contributions from the community.
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
-
-This updated README now includes information about the new features "Message Replies (Threads)" and "Huddle with Other Users." You can further customize it to provide more details, examples, and screenshots specific to your application.
